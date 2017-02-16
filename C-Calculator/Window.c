@@ -40,7 +40,7 @@ int CALLBACK WinMain(_In_ HINSTANCE instance, _In_ HINSTANCE prevInstance, _In_ 
 {
 	HWND hdlg;
 	ans = malloc(sizeof(_CCALC_DT));
-	ans = 0;
+	*ans = 0;
 	hdlg = CreateDialogParam(0, MAKEINTRESOURCE(CCALC_GUI), 0, DialogProc, 0);
 	ShowWindow(hdlg, cmdShow);
 	

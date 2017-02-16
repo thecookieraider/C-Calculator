@@ -457,6 +457,10 @@ destruct:
 
 _CCALC_DT factorial(_CCALC_DT num)
 {
+	if (num < -1) {
+		__errFlag = NEG_FACTORIAL;
+		__errMsg = "Factorial cannot be negative.";
+	}
 	_CCALC_DT result;
 	if (num > MAX_FACTORIAL) {
 		__errFlag = FAT_FACTORIAL;

@@ -21,8 +21,32 @@ void textFieldHandler(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam) {
 			LPTSTR editControlBuffer = getEditFieldText(hdlg, IDC_EDIT1);
 			LPTSTR newEditControl = malloc(sizeof(LPTSTR) * wcslen(editControlBuffer) + 2);
 			int bufferLen = getEditFieldLen(hdlg, IDC_EDIT1);
-			if (strstr(editControlBuffer, "ans")) {
-				sprintf(newEditControl, "%s", "ans");
+			if (bufferLen == 0) {
+				free(newEditControl);
+				return;
+			}
+			if (editControlBuffer[bufferLen - 2] == '!') {
+				sprintf(newEditControl, "%c%s", '!', "ans");
+				SendDlgItemMessage(hdlg, IDC_EDIT1, WM_SETTEXT, 0, newEditControl);
+				clearOnType = false;
+				free(editControlBuffer);
+				return;
+			}
+			if (isoperator(editControlBuffer[bufferLen - 2])) {
+				sprintf(newEditControl, "%s%c", "ans", editControlBuffer[bufferLen - 2]);
+				SendDlgItemMessage(hdlg, IDC_EDIT1, WM_SETTEXT, 0, newEditControl);
+				clearOnType = false;
+				free(editControlBuffer);
+				return;
+			}
+			//fix this...erasing everything before and then writing ans...
+			if (strstr(editControlBuffer, "ans")){
+				int i;
+				for (i = 0; i < bufferLen-1; i++) {
+					newEditControl[i] = editControlBuffer[i];
+				}
+				newEditControl[i] = '\0';
+				
 				SendDlgItemMessage(hdlg, IDC_EDIT1, WM_SETTEXT, 0, newEditControl);
 				clearOnType = false;
 				free(editControlBuffer);

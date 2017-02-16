@@ -20,7 +20,8 @@ typedef enum {
 	FAT_EXPONENT,
 	FAT_FACTORIAL,
 	BAD_PARENTHESIS,
-	GEN_SYNTAX
+	GEN_SYNTAX,
+	NEG_FACTORIAL
 } Error;
 
 typedef enum {
