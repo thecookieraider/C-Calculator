@@ -39,7 +39,7 @@ void textFieldHandler(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam) {
 				free(editControlBuffer);
 				return;
 			}
-			//fix this...erasing everything before and then writing ans...
+
 			if (strstr(editControlBuffer, "ans")){
 				int i;
 				for (i = 0; i < bufferLen-1; i++) {
@@ -104,11 +104,11 @@ bool funcHandler(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam) {
 		lstrcat(newEditControl, _T("."));
 		SendDlgItemMessage(hdlg, IDC_EDIT1, WM_SETTEXT, 0, newEditControl);
 		return true;
-	}
+		}
 	case BUTTONCLEAR2: {
 		SendDlgItemMessage(hdlg, IDC_EDIT1, WM_SETTEXT, 0, (LPTSTR)" ");
 		return true;
-	}
+		}
 
 	case BUTTONSIGN: {
 		LPTSTR editControlBuffer = getEditFieldText(hdlg, IDC_EDIT1);
@@ -132,6 +132,23 @@ bool funcHandler(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam) {
 			return true;
 		}
 		
+		
+	}
+	case BUTTONOPENP: {
+		LPTSTR editControlBuffer = getEditFieldText(hdlg, IDC_EDIT1);
+		LPTSTR newEditControl = malloc(sizeof(LPTSTR) * wcslen(editControlBuffer) + 2);
+		lstrcpy(newEditControl, editControlBuffer);
+		lstrcat(newEditControl, _T("("));
+		SendDlgItemMessage(hdlg, IDC_EDIT1, WM_SETTEXT, 0, newEditControl);
+		break;
+	}
+	case BUTTONCLOSEP: {
+		LPTSTR editControlBuffer = getEditFieldText(hdlg, IDC_EDIT1);
+		LPTSTR newEditControl = malloc(sizeof(LPTSTR) * wcslen(editControlBuffer) + 2);
+		lstrcpy(newEditControl, editControlBuffer);
+		lstrcat(newEditControl, _T(")"));
+		SendDlgItemMessage(hdlg, IDC_EDIT1, WM_SETTEXT, 0, newEditControl);
+		break;
 	}
 	}
 
@@ -180,14 +197,6 @@ void operandHandler(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam) {
 		break;
 	case BUTTONSQRT:
 		lstrcat(newEditControl, _T("^(0.5)"));
-		SendDlgItemMessage(hdlg, IDC_EDIT1, WM_SETTEXT, 0, newEditControl);
-		break;
-	case BUTTONOPENP:
-		lstrcat(newEditControl, _T("("));
-		SendDlgItemMessage(hdlg, IDC_EDIT1, WM_SETTEXT, 0, newEditControl);
-		break;
-	case BUTTONCLOSEP:
-		lstrcat(newEditControl, _T(")"));
 		SendDlgItemMessage(hdlg, IDC_EDIT1, WM_SETTEXT, 0, newEditControl);
 		break;
 	case BUTTONFACT:

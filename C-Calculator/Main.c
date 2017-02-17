@@ -3,6 +3,7 @@
 
 int main(void) {
 	WinMain(GetModuleHandle(NULL), NULL, GetCommandLine(), SW_SHOW);
+	/* Console GUI
 	char storage[MAXLINE];
 	_CCALC_DT * ans = 0;
 	do {
@@ -26,4 +27,5 @@ int main(void) {
 
 	
 	return 0;
+	*/
 }

@@ -229,7 +229,7 @@ static char * expand(char * expr, _CCALC_DT * ans) {
 			__errFlag = BAD_PARENTHESIS;
 			printf("Syntax Error: Parenthesis Mismatch. Try Again\n");
 			__errMsg = "Syntax Error: Parenthesis Mismatch. Try Again\n";
-			return -1;
+			return '\0';
 		}
 	}
 
@@ -265,6 +265,7 @@ static char * expand(char * expr, _CCALC_DT * ans) {
 		free(buffer);
 		return expand(new_expr, ans);
 	}
+
 	return expr;
 
 
@@ -273,6 +274,7 @@ static char * expand(char * expr, _CCALC_DT * ans) {
 _CCALC_DT eval(char * expr, _CCALC_DT * ans) {
 	if (__errFlag) return -1;
 	expr = expand(expr, ans);
+	if (__errFlag) return -1;
 	if (getnextop(expr, 1) == -1) return atof(expr);
 	
 	

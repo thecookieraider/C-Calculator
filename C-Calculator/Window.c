@@ -23,14 +23,13 @@ INT_PTR CALLBACK DialogProc(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam) 
 		break;
 
 	case WM_CLOSE:
-		free(ans);
 		DestroyWindow(hdlg);
 		return TRUE;
-
 	case WM_DESTROY:
 		free(ans);
 		PostQuitMessage(0);
 		return TRUE;
+
 	}
 	return FALSE;
 
