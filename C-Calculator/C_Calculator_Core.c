@@ -304,8 +304,9 @@ _CCALC_DT eval(char * expr, _CCALC_DT * ans) {
 	position += m;
 	
 	operand = getnextop(expr, position++);
-	
 	second = getnextnum(expr, position);
+
+	if (__errFlag == GEN_SYNTAX) return -1;
 	m = getnumlength(expr, position);
 	if (second < 0) m += 1;
 	position += m;
@@ -332,6 +333,8 @@ _CCALC_DT eval(char * expr, _CCALC_DT * ans) {
 		if (second < 0) m += 1;
 		position += m;
 		
+		if (__errFlag == GEN_SYNTAX) return -1;
+
 		if (first == -1 || operand == -1 || second == -1) {
 			break;
 		}

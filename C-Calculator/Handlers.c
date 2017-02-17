@@ -106,6 +106,7 @@ bool funcHandler(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam) {
 		return true;
 		}
 	case BUTTONCLEAR2: {
+		clearOnType = false;
 		SendDlgItemMessage(hdlg, IDC_EDIT1, WM_SETTEXT, 0, (LPTSTR)" ");
 		return true;
 		}

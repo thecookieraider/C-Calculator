@@ -17,11 +17,11 @@
 #define OPERANDS "+*/-^~"
 
 typedef enum {
-	FAT_EXPONENT,
-	FAT_FACTORIAL,
-	BAD_PARENTHESIS,
-	GEN_SYNTAX,
-	NEG_FACTORIAL
+	FAT_EXPONENT = 1,
+	FAT_FACTORIAL = 2,
+	BAD_PARENTHESIS = 3,
+	GEN_SYNTAX = 4,
+	NEG_FACTORIAL = 5
 } Error;
 
 typedef enum {
