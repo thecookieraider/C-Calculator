@@ -21,8 +21,8 @@ void textFieldHandler(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam) {
 			LPTSTR editControlBuffer = getEditFieldText(hdlg, IDC_EDIT1);
 			LPTSTR newEditControl = malloc(sizeof(LPTSTR) * wcslen(editControlBuffer) + 2);
 			int bufferLen = getEditFieldLen(hdlg, IDC_EDIT1);
-			if (bufferLen == 0) {
-				free(newEditControl);
+			if (editControlBuffer[0] == '\0') {
+				MessageBeep((UINT)-1); 
 				return;
 			}
 			if (editControlBuffer[bufferLen - 2] == '!') {
