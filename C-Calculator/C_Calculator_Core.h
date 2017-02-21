@@ -13,15 +13,20 @@
 #define MAXNUMBERLEN 100
 #define _CCALC_DT long double
 #define MAX_FACTORIAL 170
-
+#define MAX_FUNC_LEN 3
 #define OPERANDS "+*/-^~"
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 typedef enum {
 	FAT_EXPONENT = 1,
 	FAT_FACTORIAL = 2,
 	BAD_PARENTHESIS = 3,
 	GEN_SYNTAX = 4,
-	NEG_FACTORIAL = 5
+	NEG_FACTORIAL = 5,
+	BAD_FUNC = 6
 } Error;
 
 typedef enum {
@@ -58,5 +63,5 @@ int getnumlength(char * string, size_t fromindex);
 _CCALC_DT ipow(_CCALC_DT base, _CCALC_DT exp);
 _CCALC_DT factorial(_CCALC_DT num);
 static char * expand(char * expr, _CCALC_DT * ans);
-
+_CCALC_DT executeFunction(char * func, _CCALC_DT arg);
 #endif

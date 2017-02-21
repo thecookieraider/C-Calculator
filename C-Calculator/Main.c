@@ -3,9 +3,9 @@
 
 int main(void) {
 	WinMain(GetModuleHandle(NULL), NULL, GetCommandLine(), SW_SHOW);
-	/* Console 
 	char storage[MAXLINE];
-	_CCALC_DT * ans = 0;
+	ans = malloc(sizeof(_CCALC_DT));
+	*ans = 0;
 	do {
 		//If the getline failed (line too large)
 		if(getline(storage)) {
@@ -21,11 +21,11 @@ int main(void) {
 			continue;
 		};
 		//Print the number and give them another go
+
 		*ans = result;
 		printf("\n\n%lf\n\n", result);
 	} while (storage[0] != 'q');
 
 	
 	return 0;
-	*/
 }

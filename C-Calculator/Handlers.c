@@ -79,12 +79,12 @@ bool funcHandler(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam) {
 			LPTSTR editControlBuffer = getEditFieldText(hdlg, IDC_EDIT1);
 			LPTSTR newEditControl = malloc(sizeof(LPTSTR) * wcslen(editControlBuffer) + 2);
 			int bufferLen = getEditFieldLen(hdlg, IDC_EDIT1);
-			if (bufferLen == 0) {
-				Beep(750, 300);
+			if (editControlBuffer[0] == '\0') {
+				MessageBeep((UINT)-1); 
 				return true;
 			}
 			int i;
-			if (editControlBuffer[bufferLen - 2] == 's') bufferLen -= 4;
+			if (isalpha(editControlBuffer[bufferLen - 2])) bufferLen -= 4;
 			else bufferLen -= 2;
 			for (i = 0; i < bufferLen; i++) {
 				newEditControl[i] = editControlBuffer[i];
@@ -148,6 +148,42 @@ bool funcHandler(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam) {
 		LPTSTR newEditControl = malloc(sizeof(LPTSTR) * wcslen(editControlBuffer) + 2);
 		lstrcpy(newEditControl, editControlBuffer);
 		lstrcat(newEditControl, _T(")"));
+		SendDlgItemMessage(hdlg, IDC_EDIT1, WM_SETTEXT, 0, newEditControl);
+		break;
+	}
+
+	case BUTTONTAN: {
+		LPTSTR editControlBuffer = getEditFieldText(hdlg, IDC_EDIT1);
+		LPTSTR newEditControl = malloc(sizeof(LPTSTR) * wcslen(editControlBuffer) + 2);
+		lstrcpy(newEditControl, editControlBuffer);
+		lstrcat(newEditControl, _T("tan("));
+		SendDlgItemMessage(hdlg, IDC_EDIT1, WM_SETTEXT, 0, newEditControl);
+		break;
+	}
+
+	case BUTTONCOS: {
+		LPTSTR editControlBuffer = getEditFieldText(hdlg, IDC_EDIT1);
+		LPTSTR newEditControl = malloc(sizeof(LPTSTR) * wcslen(editControlBuffer) + 2);
+		lstrcpy(newEditControl, editControlBuffer);
+		lstrcat(newEditControl, _T("cos("));
+		SendDlgItemMessage(hdlg, IDC_EDIT1, WM_SETTEXT, 0, newEditControl);
+		break;
+	}
+	
+	 case BUTTONSIN: {
+		LPTSTR editControlBuffer = getEditFieldText(hdlg, IDC_EDIT1);
+		LPTSTR newEditControl = malloc(sizeof(LPTSTR) * wcslen(editControlBuffer) + 2);
+		lstrcpy(newEditControl, editControlBuffer);
+		lstrcat(newEditControl, _T("sin("));
+		SendDlgItemMessage(hdlg, IDC_EDIT1, WM_SETTEXT, 0, newEditControl);
+		break;
+	}
+	
+	case BUTTONPI: {
+		LPTSTR editControlBuffer = getEditFieldText(hdlg, IDC_EDIT1);
+		LPTSTR newEditControl = malloc(sizeof(LPTSTR) * wcslen(editControlBuffer) + 2);
+		lstrcpy(newEditControl, editControlBuffer);
+		lstrcat(newEditControl, _T("PI"));
 		SendDlgItemMessage(hdlg, IDC_EDIT1, WM_SETTEXT, 0, newEditControl);
 		break;
 	}

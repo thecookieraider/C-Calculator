@@ -160,6 +160,37 @@ int hasParenthesis(char * expression) {
 	return 0;
 }
 
+_CCALC_DT executeFunction(char * func, _CCALC_DT arg) {
+	if (strcmp(func, "tan") == 0) {
+		return tan(arg);
+	}
+	else if (strcmp(func, "cos") == 0) {
+		return cos(arg);
+	}
+	else if (strcmp(func, "sin") == 0) {
+		return sin(arg);
+	}
+	else if (strcmp(func, "log") == 0) {
+		return log(arg);
+	}
+	else if (strcmp(func, "l10") == 0) {
+		return log10(arg);
+	}
+	else if (strcmp(func, "cosh") == 0) {
+		return acos(arg);
+	}
+	else if (strcmp(func, "sinh") == 0) {
+		return asin(arg);
+	}
+	else if (strcmp(func, "tanh") == 0) {
+		return atan(arg);
+	}
+	else {
+		__errMsg = "Invalid function";
+		__errFlag = BAD_FUNC;
+		return -1;
+	}
+}
 static char * expand(char * expr, _CCALC_DT * ans) {
 	//Expand 'ans' variable
 	if (strstr(expr, "ans") != NULL && ans != -1) {
@@ -184,6 +215,83 @@ static char * expand(char * expr, _CCALC_DT * ans) {
 		new_expr[j] = '\0';
 		free(buffer);
 		return expand(new_expr, ans);
+	}
+
+	if (strstr(expr, "PI") != NULL) {
+		//Get the index
+		ptrdiff_t index = strstr(expr, "PI") - expr;
+		int m = moveup(M_PI);
+		char * buffer = malloc(sizeof(char*)*MAXLINE);
+		sprintf(buffer, "%lf", M_PI);
+
+		char * new_expr = (char*)malloc(sizeof(char*)*strlen(expr + 1));
+		size_t j, i;
+		for (j = 0, i = 0; i <= strlen(expr); i++, j++) {
+			if (i == index) {
+				strcpy(new_expr + j, buffer);
+				i += 2;
+				j += m - 1;
+			}
+			else {
+				new_expr[j] = expr[i];
+			}
+		}
+		new_expr[j] = '\0';
+		free(buffer);
+		return expand(new_expr, ans);
+	}
+
+	if (parenthesisAreConsistent) {
+		size_t buffLen = strlen(expr);
+		char * newExpr = malloc(sizeof(char*)*MAXLINE);
+		char * func = malloc(sizeof(char*) * MAX_FUNC_LEN+1);
+		char * funcArg = malloc(sizeof(char*) * MAXLINE);
+		char * buffer = malloc(sizeof(char*) * MAXLINE);
+		size_t i;
+		for (i = 0; i < buffLen; i++) {
+			if (isalpha(expr[i]) && isalpha(expr[i + 1]) && isalpha(expr[i + 2]) && expr[i + 3] == '(') {
+				func[0] = expr[i];
+				func[1] = expr[i + 1];
+				func[2] = expr[i + 2];
+				func[3] = '\0';
+
+				size_t hardBegin = i;
+				ptrdiff_t funcBegin = (expr + (i + 3)) - expr;
+				ptrdiff_t funcEnd = strchr(expr + funcBegin, ')') - expr;
+				int j, z;
+				for (j = 0, z = funcBegin+1; z < funcEnd; j++, z++) {
+					funcArg[j] = expr[z];
+				}
+
+				funcArg[j] = 0;
+				
+				_CCALC_DT funcArgExpanded = eval(funcArg, ans);
+				_CCALC_DT funcResult = executeFunction(func, funcArgExpanded);
+				sprintf(buffer, "%lf", funcResult);
+				int m = moveup(funcResult);
+				free(funcArg);
+				for (j = 0, z = 0; z < buffLen + 1; z++, j++) {
+					if (z == hardBegin) {
+						strcpy(newExpr + z, buffer);
+						z += funcEnd - funcEnd;
+						j += m;
+					}
+					else {
+						newExpr[j] = expr[z];
+					}
+				}
+				newExpr[j] = 0;
+				return expand(newExpr, ans);
+			}
+			
+
+		}
+	}
+	else {
+		__errFlag = BAD_PARENTHESIS;
+		printf("Syntax Error: Parenthesis Mismatch. Try Again\n");
+		__errMsg = "Syntax Error: Parenthesis Mismatch. Try Again\n";
+		return '\0';
 	}
 
 	if (hasParenthesis(expr)) {
