@@ -1,7 +1,7 @@
 #include "Util.h"
 
-int getline(char * storage) {
-	int i, c;
+int32_t getline(char * storage) {
+	int32_t i, c;
 
 	i = 0;
 
@@ -18,16 +18,16 @@ int getline(char * storage) {
 	return 0;
 }
 
-int moveup(long double val) {
+int32_t moveup(long double val) {
 	char * buffer = malloc(sizeof(char*) * 100);
 	sprintf(buffer, "%lf", val);
-	int toreturn = strlen(buffer);
+	int32_t toreturn = strlen(buffer);
 	free(buffer);
 	return toreturn;
 }
 
-static int strindex(char * s, char * t) {
-	int i, j, k;
+static int32_t strindex(char * s, char * t) {
+	int32_t i, j, k;
 
 	for (i = 0; s[i] != '\0'; i++) {
 		for (j = i, k = 0; t[k] != '\0' && s[j] == t[k]; j++, k++)
@@ -41,7 +41,7 @@ static int strindex(char * s, char * t) {
 
 char * eatSpaces(char * expr) {
 
-	char * newstr = malloc(sizeof(char) * (_tcslen(expr)+1));
+	char * newstr = malloc(sizeof(char) * (strlen(expr)+1));
 	char * begincache = newstr;
 	while (*expr != '\0') {
 		if (isspace(*expr)) {

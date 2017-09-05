@@ -1,11 +1,12 @@
 #include "C_Calculator_Core.h" 
-
+#pragma warning(push)
+#pragma warning(disable : 4996)
 _CCALC_DT ipow(_CCALC_DT base, _CCALC_DT exp)
 {
 	if (exp >= 31) {
 		__errFlag = FAT_EXPONENT;
-		printf("\nFATAL ERROR: Integer Buffer Overflow. Cannot set a number to the power of 31 or greater.");
-		__errMsg = "\nFATAL ERROR: Integer Buffer Overflow. Cannot set a number to the power of 31 or greater.";
+		printf("\nFATAL ERROR: int32_teger Buffer Overflow. Cannot set a number to the power of 31 or greater.");
+		__errMsg = "\nFATAL ERROR: int32_teger Buffer Overflow. Cannot set a number to the power of 31 or greater.";
 		return 0;
 	}
 
@@ -23,18 +24,18 @@ _CCALC_DT ipow(_CCALC_DT base, _CCALC_DT exp)
 
 	if (result == 0 && base != 0) {
 		__errFlag = FAT_EXPONENT;
-		printf("\nFATAL ERROR: Integer Buffer Overflow. Cannot set a number to the power of 31 or greater.");
-		__errMsg = "\nFATAL ERROR: Integer Buffer Overflow. Cannot set a number to the power of 31 or greater.";
+		printf("\nFATAL ERROR: int32_teger Buffer Overflow. Cannot set a number to the power of 31 or greater.");
+		__errMsg = "\nFATAL ERROR: int32_teger Buffer Overflow. Cannot set a number to the power of 31 or greater.";
 		return 0;
 	}
 	return negExp ? 1 / result : result;
 }
 
-char getnextop(char * string, int fromIndex) {
+char getnextop(char * string, int32_t fromIndex) {
 	if (fromIndex < 0)
 		return -1;
 
-	int i;
+	int32_t i;
 	i = fromIndex;
 	do {
 		for (; ( !isoperator(string[i]) ) && string[i] != '\0'; i++)
@@ -53,9 +54,9 @@ _CCALC_DT getnextnum(char * string, size_t fromindex) {
 	if (fromindex < 0 || fromindex >= strlen(string) + 1)
 		return 0;
 	
-	int i;
+	int32_t i;
 	_CCALC_DT val;
-	int j;
+	int32_t j;
 
 	float sign = 1;
 
@@ -90,13 +91,13 @@ _CCALC_DT getnextnum(char * string, size_t fromindex) {
  	return val;
 }
 
-int getnumlength(char * string, size_t fromindex) {
+int32_t getnumlength(char * string, size_t fromindex) {
 	if (fromindex < 0 || fromindex >= strlen(string) + 1)
 		return 0;
 
-	int i = fromindex;
+	int32_t i = fromindex;
 
-	int len = 0;
+	int32_t len = 0;
 
 	while (!isdigit(string[i]) && string[i] != '\0')
 		i++;
@@ -114,7 +115,7 @@ int getnumlength(char * string, size_t fromindex) {
 }
 
 
-int isoperator(char  op) {
+int32_t isoperator(char  op) {
 	if (op == 0) return false;
 	return strchr(OPERANDS, op) != NULL;
 }
@@ -125,9 +126,9 @@ _CCALC_DT exec(char * command, _CCALC_DT * ans) {
 }
 
 	
-int parenthesisAreConsistent(char * expression) {
-	int openCnt = 0;
-	int closedCnt = 0;
+int32_t parenthesisAreConsistent(char * expression) {
+	int32_t openCnt = 0;
+	int32_t closedCnt = 0;
 
 	for (size_t i = 0; i <= strlen(expression) + 1; i++) {
 		if (openCnt < closedCnt) return 0;
@@ -148,7 +149,7 @@ int parenthesisAreConsistent(char * expression) {
 	return 0;
 }
 
-int hasParenthesis(char * expression) {
+int32_t hasParenthesis(char * expression) {
 	for (size_t i = 0; i <= strlen(expression) + 1; i++) {
 		if (expression[i] == '\0')
 			return 0;
@@ -196,7 +197,7 @@ static char * expand(char * expr, _CCALC_DT * ans) {
 	if (strstr(expr, "ans") != NULL && ans != -1) {
 		//Get the index
 		ptrdiff_t index = strstr(expr, "ans") - expr;
-		int m = moveup(*ans);
+		int32_t m = moveup(*ans);
 		char * buffer = malloc(sizeof(char*)*MAXNUMBERLEN);
 		sprintf(buffer, "%lf", *ans);
 
@@ -210,7 +211,7 @@ static char * expand(char * expr, _CCALC_DT * ans) {
 			}
 			else {
 				new_expr[j] = expr[i];
-			}
+			} 
 		}
 		new_expr[j] = '\0';
 		free(buffer);
@@ -220,7 +221,7 @@ static char * expand(char * expr, _CCALC_DT * ans) {
 	if (strstr(expr, "PI") != NULL) {
 		//Get the index
 		ptrdiff_t index = strstr(expr, "PI") - expr;
-		int m = moveup(M_PI);
+		int32_t m = moveup(M_PI);
 		char * buffer = malloc(sizeof(char*)*MAXLINE);
 		sprintf(buffer, "%lf", M_PI);
 
@@ -258,7 +259,14 @@ static char * expand(char * expr, _CCALC_DT * ans) {
 				size_t hardBegin = i;
 				ptrdiff_t funcBegin = (expr + (i + 3)) - expr;
 				ptrdiff_t funcEnd = strchr(expr + funcBegin, ')') - expr;
-				int j, z;
+				if(funcEnd < 0){
+					__errFlag = BAD_PARENTHESIS;
+					printf("Syntax Error: Parenthesis Mismatch. Try Again\n");
+					__errMsg = "Syntax Error: Parenthesis Mismatch. Try Again\n";
+					return '\0';
+				}
+
+				size_t j, z;
 				for (j = 0, z = funcBegin+1; z < funcEnd; j++, z++) {
 					funcArg[j] = expr[z];
 				}
@@ -268,7 +276,7 @@ static char * expand(char * expr, _CCALC_DT * ans) {
 				_CCALC_DT funcArgExpanded = eval(funcArg, ans);
 				_CCALC_DT funcResult = executeFunction(func, funcArgExpanded);
 				sprintf(buffer, "%lf", funcResult);
-				int m = moveup(funcResult);
+				int32_t m = moveup(funcResult);
 				free(funcArg);
 				for (j = 0, z = 0; z < buffLen + 1; z++, j++) {
 					if (z == hardBegin) {
@@ -314,7 +322,7 @@ static char * expand(char * expr, _CCALC_DT * ans) {
 
 			_CCALC_DT computedVal = eval(placeholder, ans);
 			if (computedVal == -1) return 0;
-			int m = moveup(computedVal);
+			int32_t m = moveup(computedVal);
 			char * buffer = malloc(sizeof(char*) * MAXNUMBERLEN);
 			sprintf(buffer, "%lf", computedVal);
 			free(placeholder);
@@ -342,10 +350,11 @@ static char * expand(char * expr, _CCALC_DT * ans) {
 	}
 
 	if (strstr(expr, "!")) {
-		int i, j;
+		size_t i;
+		size_t j;
 		char * index = strchr(expr, '!');
 		ptrdiff_t beginIndex = (index - expr);
-		int numLen = getnumlength(expr, beginIndex);
+		int32_t numLen = getnumlength(expr, beginIndex);
 		char * afterFactorial = malloc(sizeof(char*)*strlen(expr) + 1);
 
 		for (i = beginIndex+1, j = 0; i <= numLen + beginIndex; i++, j++) {
@@ -386,19 +395,19 @@ _CCALC_DT eval(char * expr, _CCALC_DT * ans) {
 	if (getnextop(expr, 1) == -1) return atof(expr);
 	
 	
-	int position = 0;
+	int32_t position = 0;
 	
-	int position_in_array = 0;
+	int32_t position_in_array = 0;
 	
 	
 	
 	_CCALC_DT first, second;
 	
 	
-	int m;
+	int32_t m;
 	char operand;
 	
-	int exprCount = 0;
+	int32_t exprCount = 0;
 	
 	struct expression expr_vec[MAXLINE / 3];
 	
@@ -454,9 +463,9 @@ _CCALC_DT eval(char * expr, _CCALC_DT * ans) {
 	}
 	
 	
-	int maxprioIndex;
-	int priority = 0;
-	for (int i = 0; i < exprCount; i++) {
+	int32_t maxprioIndex;
+	int32_t priority = 0;
+	for (int32_t i = 0; i < exprCount; i++) {
 		if (expr_vec[i].priority > priority) {
 			maxprioIndex = i;
 			priority = expr_vec[i].priority;
@@ -486,16 +495,16 @@ _CCALC_DT eval(char * expr, _CCALC_DT * ans) {
 
 	if (result == 0 && expr_vec[maxprioIndex].operand == '^') {
 		__errFlag = FAT_EXPONENT;
-		printf("\nFATAL ERROR: Integer Buffer Overflow. Max value is 2^31. Result was larger than or equal to this\n\n");
-		__errMsg = "\nFATAL ERROR : Integer Buffer Overflow.Max value is 2 ^ 31. Result was larger than or equal to this\n\n";
+		printf("\nFATAL ERROR: int32_teger Buffer Overflow. Max value is 2^31. Result was larger than or equal to this\n\n");
+		__errMsg = "\nFATAL ERROR : int32_teger Buffer Overflow.Max value is 2 ^ 31. Result was larger than or equal to this\n\n";
 		goto destruct;
 	}
 
 	
-	int resultIsIn = 0;
+	int32_t resultIsIn = 0;
 	char * newexpr = malloc(sizeof(char *) * strlen(expr));
 	
-	for (int i = 0; i < exprCount; i++) {
+	for (int32_t i = 0; i < exprCount; i++) {
 		
 		if (expr_vec[i].flagged == 1 && resultIsIn) continue;
 		
@@ -587,3 +596,5 @@ _CCALC_DT factorial(_CCALC_DT num)
 	result = factorial(num - 1) * num;
 	return result;
 }
+
+#pragma warning(pop)

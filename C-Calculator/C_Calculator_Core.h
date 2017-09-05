@@ -7,6 +7,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include "Util.h"
 
 #define MAXLINE 100

@@ -5,9 +5,9 @@
 #include <string.h>
 #include "C_Calculator_Core.h"
 
-int getOperandPriority(char operand);
-int getline(char * storage);
-int strindex(char * s, char * t);
+int32_t getOperandPriority(char operand);
+int32_t getline(char * storage);
+int32_t strindex(char * s, char * t);
 char * eatSpaces(char * exprs);
-int moveup(long double val);
+int32_t moveup(long double val);
 #endif
