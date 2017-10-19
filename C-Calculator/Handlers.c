@@ -5,6 +5,7 @@ bool clearOnType = false;
 
 size_t getEditFieldLen(HWND hdlg, INT elementCode) {
 	int bufferLen = SendDlgItemMessage(hdlg, elementCode, WM_GETTEXTLENGTH, 0, 0) + 1;
+	return bufferLen;
 }
 
 LPTSTR getEditFieldText(HWND hdlg, INT elementCode) {

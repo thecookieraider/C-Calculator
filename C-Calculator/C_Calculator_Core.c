@@ -194,7 +194,7 @@ _CCALC_DT executeFunction(char * func, _CCALC_DT arg) {
 }
 static char * expand(char * expr, _CCALC_DT * ans) {
 	//Expand 'ans' variable
-	if (strstr(expr, "ans") != NULL && ans != -1) {
+	if (strstr(expr, "ans") != NULL && *ans != -1) {
 		//Get the index
 		ptrdiff_t index = strstr(expr, "ans") - expr;
 		int32_t m = moveup(*ans);

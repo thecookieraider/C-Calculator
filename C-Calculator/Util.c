@@ -18,6 +18,9 @@ int32_t getline(char * storage) {
 	return 0;
 }
 
+//Need to use sprintf
+#pragma warning(push)
+#pragma warning(disable : 4996)
 int32_t moveup(long double val) {
 	char * buffer = malloc(sizeof(char*) * 100);
 	sprintf(buffer, "%lf", val);
@@ -25,6 +28,7 @@ int32_t moveup(long double val) {
 	free(buffer);
 	return toreturn;
 }
+#pragma warning(pop)
 
 static int32_t strindex(char * s, char * t) {
 	int32_t i, j, k;
