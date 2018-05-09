@@ -5,20 +5,23 @@
 #include <string.h>
 #include <stdint.h>
 
+//The initial size of any hashmap. Adjust if needed. The rehash function will allow you to double your
+//address space if need be
 #define INITIAL_SIZE (256)
+
+//Forward define this function since it is used in a good amount of other hashmap functions
+struct hashmap_element * hashmap_put(struct hashmap * map, char * key, void * value);
 
 struct hashmap_element
 {
 	char * key;
 	void * data;
-	hashmap_element * next;
-	hashmap_element * prev;
 };
 
 struct hashmap
 {
-	int table_size;
-	int size;
+	uint32_t table_size;
+	uint32_t size;
 	struct hashmap_element * elements;
 };
 
@@ -32,9 +35,28 @@ uint32_t hash(char * key, int hashSize)
 	return hashVal % hashSize;
 }
 
-hashmap * new_hashmap()
+void hashmap_rehash(struct hashmap * map)
 {
-	hashmap * map = (struct hashmap *)MallocOrDie(sizeof(struct hashmap));
+	struct hashmap_element * curr = map->elements;
+	struct hashmap_element * temp = (struct hashmap_element *)calloc(2 * map->table_size, sizeof(struct hashmap_element));
+
+	uint32_t old_size = map->table_size;
+
+	map->table_size *= 2;
+	map->elements = temp;
+
+	for (uint32_t i = 0; i < old_size; i++){
+		if (curr[i].key != NULL) {
+			hashmap_put(map, curr[i].key, curr[i].data);
+		}
+	}
+
+	free(curr);
+}
+
+struct hashmap * new_hashmap()
+{
+	struct hashmap * map = (struct hashmap *)MallocOrDie(sizeof(struct hashmap));
 	map->elements = (struct hashmap_element *)calloc(INITIAL_SIZE, sizeof(struct hashmap_element));
 
 	map->table_size = INITIAL_SIZE;
@@ -45,10 +67,13 @@ hashmap * new_hashmap()
 
 struct hashmap_element * hashmap_get(struct hashmap * map, char * s)
 {
-	struct hashmap_element * itr;
-	for (itr = &map->elements[hash(s, map->table_size)]; itr != NULL; itr = itr->next) {
-		if (strcmp(s, itr->key) == 0) {
-			return itr;
+	uint32_t hashValue = hash(s, map->table_size);
+
+	uint32_t stopHere = hashValue;
+
+	for (hashValue; hashValue != stopHere || map->elements[hashValue].key != NULL; hashValue = (hashValue + 1) % map->table_size) {
+		if (strcmp(s, map->elements[hashValue].key) == 0) {
+			return &map->elements[hashValue];
 		}
 	}
 
@@ -58,20 +83,23 @@ struct hashmap_element * hashmap_get(struct hashmap * map, char * s)
 struct hashmap_element * hashmap_put(struct hashmap * map, char * key, void * value)
 {
 	struct hashmap_element * e;
-	uint32_t hashVal;
+	uint32_t hashVal = hash(key, map->table_size);
 
 	if ((e = hashmap_get(map, key)) == NULL) {
-		e = (struct hashmap_element *)MallocOrDie(sizeof(struct hashmap_element));
-		e->data = value;
-		e->key = key;
 		hashVal = hash(key, map->table_size);
-		e->next = &map->elements[hashVal];
-		map->elements[hashVal].prev = e;
-		map->elements[hashVal] = *e;
+		map->elements[hashVal].data = value;
+		map->elements[hashVal].key = key;
+
 		map->size++;
 	} else {
-		free(e->data);
-		e->data = value;
+		if (map->elements[hashVal].key != key) {
+			hashVal = (hashVal + 1) % map->table_size;
+			while (map->elements[hashVal].key != NULL) { hashVal = (hashVal + 1) % map->table_size; }
+			map->elements[hashVal].data = value;
+			map->elements[hashVal].key = key;
+		} else {
+			e->data = value;
+		}
 	}
 
 	return e;
@@ -80,13 +108,27 @@ struct hashmap_element * hashmap_put(struct hashmap * map, char * key, void * va
 void hashmap_remove(struct hashmap * map, char * key)
 {
 	struct hashmap_element * e;
-	uint32_t hashVal;
-
+	uint32_t hashVal = hash(key, map->table_size);
+	uint32_t i;
 	if ((e = hashmap_get(map, key)) == NULL) return;
 	else {
-		map->elements[hash(e->next->key, map->table_size)] = *e->next;
-		e->prev->next = NULL;
-		free(e);
+		e->key = NULL;
+		e->data = NULL;
+		for (i = hashVal+1; i != map->table_size; i = (i + 1) % map->table_size) {
+			if (map->elements[i].key == NULL) {
+				break;
+			} else if(hash(map->elements[i].key, map->size <= hashVal)){
+				*e = map->elements[i];
+				e = &map->elements[i];
+				hashVal = i;
+			}
+		}
 	} 
 }
+
+void hashmap_free(struct hashmap * map)
+{
+	free(map->elements);
+}
+
 #endif
