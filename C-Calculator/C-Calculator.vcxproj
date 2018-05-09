@@ -19,21 +19,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="C_Calculator_Core.h" />
-    <ClInclude Include="Handlers.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="Util.h" />
-    <ClInclude Include="Window.h" />
+    <ClInclude Include="calculator_io.h" />
+    <ClInclude Include="con_window.h" />
+    <ClInclude Include="con_event_handler.h" />
+    <ClInclude Include="con_window_renderer.h" />
+    <ClInclude Include="hashmap.h" />
+    <ClInclude Include="linked_list.h" />
+    <ClInclude Include="util.h" />
+    <ClInclude Include="con_window_buffer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="C_Calculator_Core.c" />
-    <ClCompile Include="Handlers.c" />
-    <ClCompile Include="Main.c" />
-    <ClCompile Include="Util.c" />
-    <ClCompile Include="Window.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Resource.rc" />
+    <ClCompile Include="C_Calculator_Core.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="main.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1C3EF3D0-A640-4D5B-9930-0F3255D969CF}</ProjectGuid>

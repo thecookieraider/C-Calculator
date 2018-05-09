@@ -126,28 +126,7 @@ _CCALC_DT exec(char * command, _CCALC_DT * ans) {
 }
 
 	
-int32_t parenthesisAreConsistent(char * expression) {
-	int32_t openCnt = 0;
-	int32_t closedCnt = 0;
 
-	for (size_t i = 0; i <= strlen(expression) + 1; i++) {
-		if (openCnt < closedCnt) return 0;
-
-		if (expression[i] == '\0' && (closedCnt == openCnt))
-			return 1;
-		else if (expression[i] == '\0' && (closedCnt != openCnt))
-			return 0;
-		 
-
-		if (expression[i] == '(')
-			openCnt++;
-		else if (expression[i] == ')')
-			closedCnt++;
-
-	}
-
-	return 0;
-}
 
 int32_t hasParenthesis(char * expression) {
 	for (size_t i = 0; i <= strlen(expression) + 1; i++) {
@@ -399,10 +378,7 @@ _CCALC_DT eval(char * expr, _CCALC_DT * ans) {
 	
 	int32_t position_in_array = 0;
 	
-	
-	
 	_CCALC_DT first, second;
-	
 	
 	int32_t m;
 	char operand;
@@ -495,8 +471,8 @@ _CCALC_DT eval(char * expr, _CCALC_DT * ans) {
 
 	if (result == 0 && expr_vec[maxprioIndex].operand == '^') {
 		__errFlag = FAT_EXPONENT;
-		printf("\nFATAL ERROR: int32_teger Buffer Overflow. Max value is 2^31. Result was larger than or equal to this\n\n");
-		__errMsg = "\nFATAL ERROR : int32_teger Buffer Overflow.Max value is 2 ^ 31. Result was larger than or equal to this\n\n";
+		printf("\nFATAL ERROR: integer Buffer Overflow. Max value is 2^31. Result was larger than or equal to this\n\n");
+		__errMsg = "\nFATAL ERROR : integer Buffer Overflow.Max value is 2 ^ 31. Result was larger than or equal to this\n\n";
 		goto destruct;
 	}
 
@@ -513,10 +489,7 @@ _CCALC_DT eval(char * expr, _CCALC_DT * ans) {
 			break;
 		}
 		
-		
 		char * to_add = malloc(sizeof(char *) * strlen(expr));
-		
-		
 		
 		if (expr_vec[i].flagged == 1 && i == 0) {
 			sprintf(to_add, "%lf%c%lf", result, expr_vec[i+1].operand, expr_vec[i+1].righthand);
@@ -528,8 +501,6 @@ _CCALC_DT eval(char * expr, _CCALC_DT * ans) {
 			continue;
 		}
 		
-		
-		
 		else if (expr_vec[i].flagged == 1 && i != 0) {
 			sprintf(to_add, "%c%lf", expr_vec[i + 1].operand, result);
 			
@@ -537,8 +508,6 @@ _CCALC_DT eval(char * expr, _CCALC_DT * ans) {
 			i++;
 			continue;
 		}
-		
-		
 		
 		else if (expr_vec[i + 1].flagged == 1 && i == 0) {
 			sprintf(to_add, "%lf%c%lf", expr_vec[i].lefthand, expr_vec[i].operand, result);
@@ -548,8 +517,6 @@ _CCALC_DT eval(char * expr, _CCALC_DT * ans) {
 			resultIsIn = 1;
 			continue;
 		}
-		
-		
 		
 		else if (expr_vec[i + 1].flagged == 1 && i != 0) {
 			sprintf(to_add, "%c%lf", expr_vec[i].operand, result);
