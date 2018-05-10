@@ -3,6 +3,7 @@
 
 #include <Windows.h>
 #include <tchar.h>
+#include <stdint.h>
 #include "con_window_renderer.h"
 
 struct ConWindow
@@ -16,9 +17,9 @@ struct ConWindow
 	COORD cursorPos;
 	CONSOLE_FONT_INFOEX font;
 
-	int windowW, windowH;
+	int32_t windowW, windowH;
 	short bufW, bufH, visBufW, visBufH;
-	int cursorVisible, isFullScreen;
+	int32_t cursorVisible, isFullScreen;
 };
 
 void window_init(struct ConWindow * window)
@@ -112,7 +113,7 @@ void window_render(struct ConWindow * window)
 	window_setCursorVisible(window, window->cursorVisible);
 }
 
-void window_setCursorVisible(struct ConWindow * window, int show)
+void window_setCursorVisible(struct ConWindow * window, int32_t show)
 {
 	CONSOLE_CURSOR_INFO cci;
 	GetConsoleCursorInfo(window->oh, &cci);
@@ -122,7 +123,7 @@ void window_setCursorVisible(struct ConWindow * window, int show)
 	SetConsoleCursorInfo(window->oh, &cci);
 }
 
-void window_setFontSettings(struct ConWindow * window, int w, int h, const TCHAR * fontFaceName)
+void window_setFontSettings(struct ConWindow * window, int32_t w, int32_t h, const TCHAR * fontFaceName)
 {
 	if (w < 5 || w > 72) w = 28;
 	if (h < 5 || h > 72) h = 28;
@@ -143,7 +144,7 @@ void window_setFontSettings(struct ConWindow * window, int w, int h, const TCHAR
 	window_resizeBuffer(window, window->cbi.dwSize.X, window->cbi.dwSize.Y);
 }
 
-void window_setTextWeight(struct ConWindow * window, int modifier)
+void window_setTextWeight(struct ConWindow * window, int32_t modifier)
 {
 	window->font.FontWeight = modifier;
 	SetCurrentConsoleFontEx(window->oh, false, &window->font);
@@ -174,16 +175,16 @@ void window_setFullscreen(struct ConWindow * window, bool set)
 	}
 }
 
-void window_setConsoleModes(struct ConWindow * window, int * toEnable, int * toDisable, int n, int n2)
+void window_setConsoleModes(struct ConWindow * window, int32_t * toEnable, int32_t * toDisable, int32_t n, int32_t n2)
 {
 	DWORD mode;
 	GetConsoleMode(window->ih, &mode);
 
-	for (int i = 0; i < n; i++) {
+	for (int32_t i = 0; i < n; i++) {
 		mode |= toEnable[i];
 	}
 
-	for (int i = 0; i < n2; i++) {
+	for (int32_t i = 0; i < n2; i++) {
 		mode &= ~toDisable[i];
 	}
 

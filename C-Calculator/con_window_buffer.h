@@ -5,6 +5,7 @@
 
 #include <Windows.h>
 #include <math.h>
+#include <stdint.h>
 #include "util.h"
 
 enum ConsoleColor
@@ -36,12 +37,12 @@ struct ConWindowBuffer
 };
 
 
-void gbuffer_setColor(struct ConWindowBuffer * buf, int x, int y, WORD fg, WORD bg)
+void gbuffer_setColor(struct ConWindowBuffer * buf, int32_t x, int32_t y, WORD fg, WORD bg)
 {
 	buf->chars[(y * buf->c) + x].Attributes = _CTA(bg, fg);
 }
 
-void gbuffer_setChar(struct ConWindowBuffer * buf, int x, int y, TCHAR newChar)
+void gbuffer_setChar(struct ConWindowBuffer * buf, int32_t x, int32_t y, TCHAR newChar)
 {
 #if defined(_UNICODE) || defined(UNICODE)
 	buf->chars[(y * buf->c) + x].Char.UnicodeChar = newChar;
@@ -72,7 +73,7 @@ void gbuffer_resize(struct ConWindowBuffer * buf)
 
 void gbuffer_clear(struct ConWindowBuffer * buf)
 {
-	for (int i = 0; i < buf->r * buf->c; i++) {
+	for (int32_t i = 0; i < buf->r * buf->c; i++) {
 		buf->chars[i].Attributes = _CTA(WHITE, WHITE);
 #if defined(_UNICODE) || defined(UNICODE)
 		buf->chars[i].Char.UnicodeChar = ' ';
@@ -84,7 +85,7 @@ void gbuffer_clear(struct ConWindowBuffer * buf)
 
 void gbuffer_clear(struct ConWindowBuffer * buf, WORD fg, WORD bg)
 {
-	for (int i = 0; i < buf->r * buf->c; i++) {
+	for (int32_t i = 0; i < buf->r * buf->c; i++) {
 		buf->chars[i].Attributes = _CTA(bg, fg);
 #if defined(_UNICODE) || defined(UNICODE)
 		buf->chars[i].Char.UnicodeChar = ' ';

@@ -83,4 +83,16 @@ inline void * MallocOrDie(size_t size)
 		exit(1);
 	}
 }
+
+inline void * CallocOrDie(size_t count, size_t size)
+{
+	void * toAlloc = calloc(count, size);
+
+	if (toAlloc && size) return toAlloc;
+	else {
+		printf("Houston, we've got a problem. Memory couldn't be allocated by calloc");
+		exit(1);
+	}
+}
+
 #endif

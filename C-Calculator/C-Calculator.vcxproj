@@ -25,6 +25,7 @@
     <ClInclude Include="con_window_renderer.h" />
     <ClInclude Include="hashmap.h" />
     <ClInclude Include="linked_list.h" />
+    <ClInclude Include="logger.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="con_window_buffer.h" />
   </ItemGroup>

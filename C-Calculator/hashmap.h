@@ -28,15 +28,15 @@ struct hashmap
 
 //The hash function is just the java.lang.String hash function.
 //Details can be found here: https://en.wikipedia.org/wiki/Java_hashCode()#The_java.lang.String_hash_function
-uint32_t hash(char * key, int hashSize)
+uint32_t hash(char * key, int32_t hashSize)
 {
-	uint32_t hashVal;
+	double hashVal;
 	size_t keyLength = strlen(key);
-	for (int i = 0; i < keyLength; i++) {
-		hashVal = key[i] * powf(31, keyLength - 1 - i);
+	for (size_t i = 0; i < keyLength; i++) {
+		hashVal = key[i] * pow(31, keyLength - 1 - i);
 	}
 
-	return hashVal % hashSize;
+	return (int32_t)hashVal % hashSize;
 }
 
 //Rehashes a given hashmap into a address space that is 
@@ -86,11 +86,14 @@ struct hashmap_element * hashmap_get(struct hashmap * map, char * s)
 	//due to a collision
 	uint32_t stopHere = hashValue;
 
-	//This for-loop will only continue if we aren't at the stop value and if our current
-	//key-value pair actually exists. This ensures we check the initial hash and we check
-	//every cell up until a null cell to account for the linear probing brough about by
-	//hashmap_put
-	for (hashValue; hashValue != stopHere || map->elements[hashValue].key != NULL; hashValue = (hashValue + 1) % map->table_size) {
+	if (map->elements[hashValue].key == NULL) return NULL;
+	else {
+		if (strcmp(s, map->elements[hashValue].key) == 0) {
+			return &map->elements[hashValue];
+		}
+	}
+
+	for (hashValue = (hashValue + 1) % map->table_size; hashValue != stopHere && map->elements[hashValue].key != NULL; hashValue = (hashValue + 1) % map->table_size) {
 		if (strcmp(s, map->elements[hashValue].key) == 0) {
 			return &map->elements[hashValue];
 		}
@@ -157,6 +160,7 @@ void hashmap_remove(struct hashmap * map, char * key)
 void hashmap_free(struct hashmap * map)
 {
 	free(map->elements);
+	free(map);
 	map = NULL;
 }
 

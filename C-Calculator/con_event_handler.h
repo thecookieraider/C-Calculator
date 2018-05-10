@@ -2,6 +2,7 @@
 #define CON_EVENT_HANDLER_H
 
 #include <Windows.h>
+#include <stdint.h>
 #include "util.h"
 
 #define VK_0 0x30
@@ -42,9 +43,9 @@
 #define VK_Y 0x59
 #define VK_Z 0x5A
 
-int keyRecord[0xFF + 1] = { 0 };
+int32_t keyRecord[0xFF + 1] = { 0 };
 
-int events_hasInputs(HANDLE ih)
+int32_t events_hasInputs(HANDLE ih)
 {
 	DWORD eventsAvailable;
 	GetNumberOfConsoleInputEvents(ih, &eventsAvailable);
@@ -58,7 +59,7 @@ void events_process(HANDLE ih)
 
 	INPUT_RECORD * events = (INPUT_RECORD *)MallocOrDie(sizeof(INPUT_RECORD) * eventsAvailable);
 	ReadConsoleInput(ih, events, eventsAvailable, &eventsRead);
-	for (int i = 0; i < eventsRead; i++) {
+	for (int32_t i = 0; i < eventsRead; i++) {
 		if (events[i].EventType == KEY_EVENT) {
 			keyRecord[events[i].Event.KeyEvent.wVirtualKeyCode] = events[i].Event.KeyEvent.bKeyDown ? events[i].Event.KeyEvent.wRepeatCount : 0;
 		}
