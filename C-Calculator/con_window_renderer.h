@@ -32,7 +32,7 @@ void renderer_render(ConWindowRenderer * r, HANDLE oh, CONSOLE_SCREEN_BUFFER_INF
 
 void renderer_drawString(ConWindowRenderer * r, const TCHAR * str, size_t len, int32_t x, int32_t y, WORD fg, WORD bg)
 {
-	for (unsigned int32_t i = x, j = 0; j < len && i < x + len; j++, i++) {
+	for (int32_t i = x, j = 0; j < len && i < x + len; j++, i++) {
 		gbuffer_setChar(r->buf, i, y, str[j]);
 		gbuffer_setColor(r->buf, i, y, fg, bg);
 	}
@@ -40,7 +40,7 @@ void renderer_drawString(ConWindowRenderer * r, const TCHAR * str, size_t len, i
 
 void renderer_drawVerticalString(ConWindowRenderer * r, const TCHAR * str, size_t len, int32_t x, int32_t y, WORD fg, WORD bg)
 {
-	for (unsigned int32_t j = 0; j < len; j++) {
+	for (int32_t j = 0; j < len; j++) {
 		gbuffer_setChar(r->buf, x, y, str[j]);
 		gbuffer_setColor(r->buf, x, y++, fg, bg);
 	}
