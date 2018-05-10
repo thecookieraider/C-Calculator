@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <Windows.h>
 
 int32_t parenthesisAreConsistent(char * expression)
 {
@@ -93,6 +94,21 @@ inline void * CallocOrDie(size_t count, size_t size)
 		printf("Houston, we've got a problem. Memory couldn't be allocated by calloc");
 		exit(1);
 	}
+}
+
+void DieOnWindowsError(FILE * output)
+{
+	//Get the error message, if any.
+	DWORD errorMessageID = GetLastError();
+	if (errorMessageID == 0)
+		return ""; //No error message has been recorded
+
+	LPSTR messageBuffer = NULL;
+	size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+								 NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+
+	fputs(messageBuffer, output);
+	exit(1);
 }
 
 #endif

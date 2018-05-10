@@ -47,7 +47,7 @@ int32_t logger_setupBuffers(int count, char * fileNames, ...)
 
 #pragma warning(push)
 #pragma warning(disable : 4996)
-int32_t logger_writeToBuffer(char * fileName, char * toWrite, int32_t includeNewline)
+int32_t logger_writeToBuffer(char * fileName, char * toWrite)
 {
 	//Get the current date time
 	time_t rawTime = time(NULL);
@@ -58,7 +58,6 @@ int32_t logger_writeToBuffer(char * fileName, char * toWrite, int32_t includeNew
 		fputs(asctime(localtime(&rawTime)), f);
 		fputc(' ', f);
 		fputs(toWrite, f);
-		if (includeNewline) fputc('\n', f);
 		return ferror(f) ? FILE_NOTOK : FILE_OK;
 	} else {
 		return BUFFER_DOESNT_EXIST;
@@ -102,8 +101,23 @@ int32_t logger_retrieveBuffer(char * fileName, char * bufferToWriteTo)
 	}
 }
 
+FILE * logger_retrieveBuffer(char * fileName)
+{
+	struct hashmap_element * e;
+	if ((e = hashmap_get(fileBuffers, fileName)) != NULL) {
+		return (FILE *)e->data;
+	} else {
+		return BUFFER_DOESNT_EXIST;
+	}
+}
+
 void logger_free()
 {
+	for (int32_t i = 0; i < fileBuffers->size; i++) {
+		if (fileBuffers->elements[i].key != NULL) {
+			fclose((FILE *)fileBuffers->elements[i].data);
+		}
+	}
 	hashmap_free(fileBuffers);
 }
 
