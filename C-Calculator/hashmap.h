@@ -6,8 +6,7 @@
 #include <stdint.h>
 #include <math.h>
 
-//The initial size of any hashmap. Adjust if needed. The rehash function will allow you to double your
-//address space if need be
+//The initial size of any hashmap. Adjust if needed.
 #define INITIAL_SIZE (256)
 
 //Forward define this function since it is used in a good amount of other hashmap functions
@@ -65,7 +64,7 @@ void hashmap_rehash(struct hashmap * map)
 
 //Sets up a new hashmap. The initial size of this table
 //will be set to the macro INITIAL_SIZE. Redefine hte macro if you 
-//want the initial size to be greater
+//want the initial size to be greater or less
 struct hashmap * new_hashmap()
 {
 	struct hashmap * map = (struct hashmap *)MallocOrDie(sizeof(struct hashmap));
@@ -81,7 +80,7 @@ struct hashmap * new_hashmap()
 struct hashmap_element * hashmap_get(struct hashmap * map, char * s)
 {
 	uint32_t hashValue = hash(s, map->table_size);
-	//Since the table function defined in this header file make use of linear probing,
+	//Since the table function defined in this header file makes use of linear probing,
 	//we are going to need to seach nearby pairs to see if the given key was moved to some other cell
 	//due to a collision
 	uint32_t stopHere = hashValue;
