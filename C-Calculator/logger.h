@@ -11,11 +11,11 @@
 #include <time.h>
 #include "hashmap.h"
 
-struct hashmap * fileBuffers = NULL;
+struct hashmap * openFiles = NULL;
 
-void logger_setupBuffer(char * fileName)
+void logger_setupFile(char * fileName)
 {
-	if (!fileBuffers) fileBuffers = new_hashmap();
+	if (!openFiles) openFiles = new_hashmap();
 //fopen is safe enough to use, so disable the warning that comes with it
 #pragma warning(push)
 #pragma warning(disable : 4996)
@@ -26,19 +26,19 @@ void logger_setupBuffer(char * fileName)
 		exit(1);
 	}
 
-	hashmap_put(fileBuffers, fileName, (void *)f);
+	hashmap_put(openFiles, fileName, (void *)f);
 }
 
 
-int32_t logger_setupBuffers(int count, char * fileNames, ...)
+int32_t logger_setupFiles(int count, char * fileNames, ...)
 {
-	logger_setupBuffer(fileNames);
+	logger_setupFile(fileNames);
 	va_list args;
 	va_start(args, fileNames);
 
 	for (int32_t i = 0; i < count - 1; i++) {
 		char * arg = va_arg(args, char*);
-		logger_setupBuffer(arg);
+		logger_setupFile(arg);
 	}
 
 	va_end(args);
@@ -47,13 +47,13 @@ int32_t logger_setupBuffers(int count, char * fileNames, ...)
 
 #pragma warning(push)
 #pragma warning(disable : 4996)
-int32_t logger_writeToBuffer(char * fileName, char * toWrite)
+int32_t logger_writeToFile(char * fileName, char * toWrite)
 {
 	//Get the current date time
 	time_t rawTime = time(NULL);
 
 	struct hashmap_element * e;
-	if ((e = hashmap_get(fileBuffers, fileName)) != NULL) {
+	if ((e = hashmap_get(openFiles, fileName)) != NULL) {
 		FILE * f = (FILE *)e->data;
 		fputs(asctime(localtime(&rawTime)), f);
 		fputc(' ', f);
@@ -66,24 +66,24 @@ int32_t logger_writeToBuffer(char * fileName, char * toWrite)
 #pragma warning(pop)
 
 
-int32_t logger_closeBuffer(char * fileName, int32_t flushBuffer)
+int32_t logger_closeFile(char * fileName, int32_t flushBuffer)
 {
 	struct hashmap_element * e;
-	if ((e = hashmap_get(fileBuffers, fileName)) != NULL) {
+	if ((e = hashmap_get(openFiles, fileName)) != NULL) {
 		FILE * f = (FILE *)e->data;
 		if (flushBuffer) fflush(f);
 		fclose(f);
-		hashmap_remove(fileBuffers, fileName);
+		hashmap_remove(openFiles, fileName);
 		return FILE_OK;
 	} else {
 		return BUFFER_DOESNT_EXIST;
 	}
 }
 
-int32_t logger_retrieveBuffer(char * fileName, char * bufferToWriteTo)
+int32_t logger_retrieveFileContents(char * fileName, char * bufferToWriteTo)
 {
 	struct hashmap_element * e;
-	if ((e = hashmap_get(fileBuffers, fileName)) != NULL) {
+	if ((e = hashmap_get(openFiles, fileName)) != NULL) {
 		FILE * f = (FILE *)e->data;
 		long fileSize;
 
@@ -101,24 +101,24 @@ int32_t logger_retrieveBuffer(char * fileName, char * bufferToWriteTo)
 	}
 }
 
-FILE * logger_retrieveBuffer(char * fileName)
+FILE * logger_retrieveFile(char * fileName)
 {
 	struct hashmap_element * e;
-	if ((e = hashmap_get(fileBuffers, fileName)) != NULL) {
+	if ((e = hashmap_get(openFiles, fileName)) != NULL) {
 		return (FILE *)e->data;
 	} else {
-		return BUFFER_DOESNT_EXIST;
+		return NULL;
 	}
 }
 
 void logger_free()
 {
-	for (int32_t i = 0; i < fileBuffers->size; i++) {
-		if (fileBuffers->elements[i].key != NULL) {
-			fclose((FILE *)fileBuffers->elements[i].data);
+	for (uint32_t i = 0; i < openFiles->size; i++) {
+		if (openFiles->elements[i].key != NULL) {
+			fclose((FILE *)openFiles->elements[i].data);
 		}
 	}
-	hashmap_free(fileBuffers);
+	hashmap_free(openFiles);
 }
 
 #endif

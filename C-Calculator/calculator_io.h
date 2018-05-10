@@ -13,7 +13,8 @@
 
 int32_t getline(char * storage)
 {
-	int32_t i, c;
+	int32_t i;
+	char c;
 
 	i = 0;
 
@@ -29,6 +30,7 @@ int32_t getline(char * storage)
 	storage[i] = '\0';
 	return 0;
 }
+
 int32_t isOperator(char c)
 {
 
@@ -40,10 +42,10 @@ float getNextNum(char * expression, size_t fromIndex)
 		return 0;
 	
 	float value;
-	int i;
-	int j;
+	int32_t i;
+	int32_t j;
 
-	int sign = 1;
+	int32_t sign = 1;
 
 	char buffer[1024];
 
@@ -69,12 +71,12 @@ float getNextNum(char * expression, size_t fromIndex)
 	return value;
 }
 
-char getNextOperator(char * string, int fromIndex)
+char getNextOperator(char * string, int32_t fromIndex)
 {
 	if (fromIndex < 0)
 		return -1;
 
-	int i;
+	int32_t i;
 	i = fromIndex;
 	do {
 		for (; (!isOperator(string[i])) && string[i] != '\0'; i++)
@@ -86,6 +88,7 @@ char getNextOperator(char * string, int fromIndex)
 		if (isOperator(string[i])) {
 			return string[i];
 		}
+
 	} while (1);
 }
 #endif
