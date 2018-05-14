@@ -19,7 +19,7 @@ void logger_setupFile(char * fileName)
 //fopen is safe enough to use, so disable the warning that comes with it
 #pragma warning(push)
 #pragma warning(disable : 4996)
-	FILE * f = fopen(fileName, "w+");
+	FILE * f = fopen(fileName, "a");
 #pragma warning(pop)
 	if (!f) {
 		perror("Couldn't setup a logging buffer. Fatal.");
@@ -58,6 +58,7 @@ int32_t logger_writeToFile(char * fileName, char * toWrite)
 		fputs(asctime(localtime(&rawTime)), f);
 		fputc(' ', f);
 		fputs(toWrite, f);
+		fputc('\n', f);
 		return ferror(f) ? FILE_NOTOK : FILE_OK;
 	} else {
 		return BUFFER_DOESNT_EXIST;

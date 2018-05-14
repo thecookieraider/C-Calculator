@@ -1,11 +1,36 @@
 #ifndef UTIL_H
 #define UTIL_H
+
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <Windows.h>
+
+#ifndef MAXLINE
+#define MAXLINE 100  
+#endif
+
+#ifndef OPERATOR_STRING
+#define OPERATOR_STRING "+-/*"
+#endif
+
+#ifndef MAXIMUM_EXPRESSION_LENGTH
+#define MAXIMUM_EXPRESSION_LENGTH 1048576
+#endif
+
+int32_t hasParenthesis(char * expression)
+{
+	for (size_t i = 0; i <= strlen(expression) + 1; i++) {
+		if (expression[i] == '\0')
+			return 0;
+
+		if (expression[i] == '(' || expression[i] == ')')
+			return 1;
+	}
+
+	return 0;
+}
 
 int32_t parenthesisAreConsistent(char * expression)
 {
@@ -30,13 +55,11 @@ int32_t parenthesisAreConsistent(char * expression)
 	return 0;
 }
 
-/* Remove this? */
-//Need to use sprintf
 #pragma warning(push)
 #pragma warning(disable : 4996)
-int32_t moveup(long double val) {
+int32_t getLengthOfNumber(float val) {
 	char * buffer = (char *)malloc(sizeof(char*) * 100);
-	sprintf(buffer, "%lf", val);
+	sprintf(buffer, "%f", val);
 	int32_t toreturn = strlen(buffer);
 	free(buffer);
 	return toreturn;
@@ -101,7 +124,7 @@ void DieOnWindowsError(FILE * output)
 	//Get the error message, if any.
 	DWORD errorMessageID = GetLastError();
 	if (errorMessageID == 0)
-		return ""; //No error message has been recorded
+		return; //No error message has been recorded
 
 	LPSTR messageBuffer = NULL;
 	size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -111,4 +134,96 @@ void DieOnWindowsError(FILE * output)
 	exit(1);
 }
 
+int32_t getline(char * storage)
+{
+	int32_t i;
+	char c;
+
+	i = 0;
+
+	do {
+		storage[i++] = c = getchar();
+	} while (c != '\n' && i != MAXLINE - 1);
+
+	if (i == MAXLINE - 1) {
+		printf("\n\nError: Line too large to be parsed. Can only process %d characters at a time. Please try again\n\n", MAXLINE);
+		return 1;
+	}
+
+	storage[i] = '\0';
+	return 0;
+}
+
+char * getNextNum(char * expression, size_t fromIndex, char * buffer)
+{
+	if (fromIndex < 0 || fromIndex >= strlen(expression) + 1)
+		return NULL;
+
+	int32_t i;
+	int32_t j;
+	int32_t sign = 1;
+
+	i = fromIndex;
+
+	while (!isdigit(expression[i]) && expression[i] != '\0' && expression[i] != '-' && expression[i] != '.')
+		i++;
+
+	if (expression[i] == '-') {
+		sign = -1;
+		i++;
+	}
+
+
+	for (j = 0; isdigit(expression[i]) || expression[i] == '.'; i++, j++)
+		buffer[j] = expression[i];
+
+	buffer[j] = '\0';
+	
+	if (strlen(buffer) == 1 && buffer[0] == '.') return NULL;
+
+	return buffer;
+}
+
+
+int32_t isOperator(char c)
+{
+	return strrchr(OPERATOR_STRING, c) != NULL;
+}
+
+char getNextOperator(char * string, int32_t fromIndex)
+{
+	if (fromIndex < 0)
+		return -1;
+
+	int32_t i;
+	i = fromIndex;
+	do {
+		for (; (!isOperator(string[i])) && string[i] != '\0'; i++)
+			;
+
+		if (string[i] == '\0')
+			return -1;
+
+		if (isOperator(string[i])) {
+			return string[i];
+		}
+
+	} while (1);
+}
+
+uint32_t getOperatorPriority(char operand)
+{
+	switch (operand) {
+	case '*':
+	case '/':
+		return 1;
+		break;
+	case '+':
+	case '-':
+		return 0;
+		break;
+	}
+
+	return -1;
+}
 #endif

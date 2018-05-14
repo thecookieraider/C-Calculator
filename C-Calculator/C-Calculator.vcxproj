@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="calculator_io.h" />
+    <ClInclude Include="calculator_core.h" />
     <ClInclude Include="con_window.h" />
     <ClInclude Include="con_event_handler.h" />
     <ClInclude Include="con_window_renderer.h" />
