@@ -176,7 +176,11 @@ float getNextNum(char * expression, size_t fromIndex)
 
 	buffer[j] = '\0';
 
-	return (float)atof(buffer) * sign;
+	float toReturn = (float)atof(buffer) * sign;
+
+	free(buffer);
+	
+	return toReturn;
 }
 
 size_t getLengthOfNextNumber(char * expression, size_t fromIndex)
