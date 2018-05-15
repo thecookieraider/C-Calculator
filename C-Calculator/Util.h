@@ -16,7 +16,7 @@
 #endif
 
 #ifndef MAXIMUM_EXPRESSION_LENGTH
-#define MAXIMUM_EXPRESSION_LENGTH 1048576
+#define MAXIMUM_EXPRESSION_LENGTH 4000
 #endif
 
 int32_t hasParenthesis(char * expression)
@@ -154,16 +154,13 @@ int32_t getline(char * storage)
 	return 0;
 }
 
-char * getNextNum(char * expression, size_t fromIndex, char * buffer)
+float getNextNum(char * expression, size_t fromIndex)
 {
-	if (fromIndex < 0 || fromIndex >= strlen(expression) + 1)
-		return NULL;
+	char * buffer = (char *)MallocOrDie(sizeof(char) * MAXLINE);
 
-	int32_t i;
-	int32_t j;
-	int32_t sign = 1;
-
-	i = fromIndex;
+	int32_t i = fromIndex;
+	int32_t j = 0;
+	float sign = 1;
 
 	while (!isdigit(expression[i]) && expression[i] != '\0' && expression[i] != '-' && expression[i] != '.')
 		i++;
@@ -178,12 +175,32 @@ char * getNextNum(char * expression, size_t fromIndex, char * buffer)
 		buffer[j] = expression[i];
 
 	buffer[j] = '\0';
-	
-	if (strlen(buffer) == 1 && buffer[0] == '.') return NULL;
 
-	return buffer;
+	return (float)atof(buffer) * sign;
 }
 
+size_t getLengthOfNextNumber(char * expression, size_t fromIndex)
+{
+	int32_t i = fromIndex;
+	int32_t j = 0;
+	size_t size = 0;
+
+	while (!isdigit(expression[i]) && expression[i] != '\0' && expression[i] != '-' && expression[i] != '.')
+		i++;
+
+	if (expression[i] == '-') {
+		i++;
+		size++;
+	}
+
+
+	while (isdigit(expression[i]) || expression[i] == '.') {
+		size++;
+		i++;
+	}
+
+	return size;
+}
 
 int32_t isOperator(char c)
 {

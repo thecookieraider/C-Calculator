@@ -82,6 +82,7 @@ float parse(struct expression_pack * expression)
 #pragma warning(disable : 4996)
 float evaluate(char * expression, size_t bufLength)
 {
+	expression = eatSpaces(expression);
 	//Our intention in this function is to tokenize the expression
 	//on each iteration and then solve token that has the highest precedence
 	//and comes earliest in the expression
@@ -94,26 +95,24 @@ float evaluate(char * expression, size_t bufLength)
 	int32_t highestPriorityScore = -1;
 	size_t i, j;
 
-	//Buffer for our getNextNum function to use
-	char * numBuffer = (char *)MallocOrDie(sizeof(char) * 1024);
 
 	//Tokenizing is simple. Should be self explanatory.
 	for (i = 0, j = 0; i < strlen(expression); j++) {
-		if (isOperator(expression[i])) {
+		if (isOperator(expression[i]) && i != 0 && i != '-') {
 			tokens[j].leftSide = tokens[j - 1].rightSide;
 			tokens[j].operand = expression[i];
 			tokens[j].priority = getOperatorPriority(expression[i]);
 			i++;
-			tokens[j].rightSide = (float)atof((getNextNum(expression, i, numBuffer)));
-			i += strlen(numBuffer);
+			tokens[j].rightSide = getNextNum(expression, i);
+			i += getLengthOfNextNumber(expression, i);
 		} else {
-			tokens[j].leftSide = (float)atof((getNextNum(expression, i, numBuffer)));
-			i += strlen(numBuffer);
+			tokens[j].leftSide = getNextNum(expression, i);
+			i += getLengthOfNextNumber(expression, i);
 			tokens[j].operand = expression[i];
 			tokens[j].priority = getOperatorPriority(expression[i]);
 			i++;
-			tokens[j].rightSide = (float)atof((getNextNum(expression, i, numBuffer)));
-			i += strlen(numBuffer);
+			tokens[j].rightSide = getNextNum(expression, i);
+			i += getLengthOfNextNumber(expression, i);
 		}
 	}
 
@@ -154,7 +153,6 @@ float evaluate(char * expression, size_t bufLength)
 	//If theres only one token then we are done since this was just
 	//evaluated and there is nothing left to do now
 	if (j == 1) {
-		free(numBuffer);
 		free(toAdd);
 		return result;
 	}

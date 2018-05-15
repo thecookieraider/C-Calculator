@@ -5,7 +5,7 @@
 int32_t main()
 {
 	initialize_calculator();
-	char * e = "3+3-2*9/3-4*1";
+	char * e = "-12 + 2";
 	char * expression = (char *)MallocOrDie(sizeof(char) * MAXIMUM_EXPRESSION_LENGTH);
 	strcpy(expression, e);
 
