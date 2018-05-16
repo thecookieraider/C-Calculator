@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include "util.h"
 #include "hashmap.h"
-#include "linked_list.h"
 
 #ifndef MAX_ERROR_CODE
 #define MAX_ERROR_CODE 256
