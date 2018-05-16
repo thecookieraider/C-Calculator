@@ -22,6 +22,11 @@
 
 inline void * MallocOrDie(size_t size);
 
+int32_t isOperator(char c)
+{
+	return strrchr(OPERATOR_STRING, c) != NULL && c != '\0';
+}
+
 int32_t hasParenthesis(char * expression)
 {
 	for (size_t i = 0; i <= strlen(expression) + 1; i++) {
@@ -82,10 +87,56 @@ static int32_t strindex(char * s, char * t) {
 	return i;
 }
 
+char * eatEverythingBad(char * expr, size_t bufSize)
+{
+	char * newstr = (char *)MallocOrDie(bufSize);
+	char * begincache = newstr;
+	char * beginExpr = expr;
+
+	while (*expr != '\0') {
+		if (isalpha(*expr) && isalpha(expr[1]) && isalpha(expr[2]) && expr[3] == '(') {
+			*newstr = *expr;
+			newstr++;
+			expr++;
+
+			*newstr = *expr;
+			newstr++;
+			expr++;
+
+			*newstr = *expr;
+			newstr++;
+			expr++;
+
+			*newstr = *expr;
+			newstr++;
+			expr++;
+			continue;
+		} else if (isdigit(*expr) || isOperator(*expr) || *expr == ')' || *expr == '(' || *expr == ',') {
+			*newstr = *expr;
+			newstr++;
+			expr++;
+			continue;
+		} else {
+			expr++;
+			continue;
+		}
+
+		
+	}
+	*newstr = '\0';
+
+	memset(beginExpr, 0, bufSize);
+	memcpy(beginExpr, begincache, bufSize);
+	free(begincache);
+	return beginExpr;
+}
+
 char * eatSpaces(char * expr, size_t bufSize) {
 
-	char * newstr = (char *)MallocOrDie(sizeof(char) * bufSize);
+	char * newstr = (char *)MallocOrDie(bufSize);
 	char * begincache = newstr;
+	char * beginExpr = expr;
+
 	while (*expr != '\0') {
 		if (isspace(*expr)) {
 			expr++;
@@ -97,7 +148,10 @@ char * eatSpaces(char * expr, size_t bufSize) {
 	}
 	*newstr = '\0';
 
-	return begincache;
+	memset(beginExpr, 0, bufSize);
+	memcpy(beginExpr, begincache, bufSize);
+	free(begincache);
+	return beginExpr;
 }
 
 inline void * MallocOrDie(size_t size)
@@ -205,11 +259,6 @@ size_t getLengthOfNextNumber(char * expression, size_t fromIndex)
 	}
 
 	return size;
-}
-
-int32_t isOperator(char c)
-{
-	return strrchr(OPERATOR_STRING, c) != NULL && c != '\0';
 }
 
 char getNextOperator(char * string, int32_t fromIndex)

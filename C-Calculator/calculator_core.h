@@ -54,16 +54,10 @@ float subtract(float n1, float n2)
 	return n1 - n2;
 }
 
-/* 
-Steps in parsing:
-	-Ensure parenthesis are consistent
-	-Process any functions present in the expression (build a hashtable of predefined functions such as log, exp, fact, etc. and then if the user defines one add it to this table)
-	-If there are parenthesis, find the innermost expression, send it off to our evaluation function (which just goes thru an expression consistenting of numbers and operators and returns the result)
-	 and work your way from in to out
-
-	-You're finished when the expression in the parsing function is just one number
-
-*/
+float log_func(float n1, float n2)
+{
+	return (float)log10(n1);
+}
 
 static struct hashmap * errorMessages = NULL;
 static struct func_hashmap * functions = NULL;
@@ -73,12 +67,93 @@ void insertFunction(char * name, Function f);
 float getAndApplyFunction(char * name, float left, float right);
 float evaluate(char * expression, size_t bufLength);
 
+
+#pragma warning(push)
+#pragma warning(disable : 4996)
+int32_t expandFunctions(struct expression_pack * expression)
+{
+	char * functionArgBuffer = (char *)MallocOrDie(MAXIMUM_EXPRESSION_LENGTH * sizeof(char));
+	char * functionResultBuffer = (char *)MallocOrDie(MAX_NUMBER_LENGTH * sizeof(char));
+	char * expandedExpression = (char *)MallocOrDie(expression->expressionBufferSize);
+	char functionName[4];
+	float functionArg1, functionArg2;
+	float result;
+	struct func_hashmap_element * e;
+
+	int32_t i = 0, j = 0, k = 0;
+
+	while (expression->expression[k] != '\0') {
+		if (isalpha(expression->expression[k]) && isalpha(expression->expression[k+1]) && isalpha(expression->expression[k+2]) && expression->expression[k+3] == '(') {
+			functionName[0] = expression->expression[0];
+			functionName[1] = expression->expression[1];
+			functionName[2] = expression->expression[2];
+			functionName[3] = '\0';
+
+			k = 4;
+
+			if ((e = func_hashmap_get(functions, functionName)) != NULL) {
+				while (expression->expression[k] != ',' && expression->expression[k] != '\0') {
+					functionArgBuffer[i++] = expression->expression[k++];
+				}
+
+				if (expression->expression[k] == '\0') {
+					expression->error = "4";
+					free(expandedExpression);
+					free(functionResultBuffer);
+					free(functionArgBuffer);
+					return 0;
+				}
+
+				functionArgBuffer[i] = '\0';
+				k++;
+
+				functionArg1 = evaluate(functionArgBuffer, MAXIMUM_EXPRESSION_LENGTH * sizeof(char));
+
+				i = 0;
+
+				while (expression->expression[k] != ')') {
+					functionArgBuffer[i++] = expression->expression[k++];
+				}
+
+				functionArgBuffer[i] = '\0';
+				k++;
+
+				functionArg2 = evaluate(functionArgBuffer, MAXIMUM_EXPRESSION_LENGTH * sizeof(char));
+
+				result = e->data(functionArg1, functionArg2);
+
+				sprintf(functionResultBuffer, "%f", result);
+				strcpy(&expandedExpression[j], functionResultBuffer);
+				
+				j += strlen(functionResultBuffer);
+			} else {
+				expression->error = "3";
+				free(expandedExpression);
+				free(functionResultBuffer);
+				free(functionArgBuffer);
+				return 0;
+			}
+		} else {
+			expandedExpression[j++] = expression->expression[k++];
+		}
+	}
+
+	expandedExpression[j] = '\0';
+	memset(expression->expression, 0, expression->expressionBufferSize);
+	memcpy(expression->expression, expandedExpression, expression->expressionBufferSize);
+	free(expandedExpression);
+	free(functionResultBuffer);
+	free(functionArgBuffer);
+	return 1;
+}
+#pragma warning(pop)
+
 #pragma warning(push)
 #pragma warning(disable : 4996)
 float parse(struct expression_pack * expression)
 {
 	expression->expression = eatSpaces(expression->expression, expression->expressionBufferSize);
-
+	expression->expression = eatEverythingBad(expression->expression, expression->expressionBufferSize);
 	//Sanity checks before we process this input
 	if (!calculatorIsInitialized) {
 		printf("System Error. Calculator system has not been initialized and it could not parse the given expression");
@@ -100,6 +175,7 @@ float parse(struct expression_pack * expression)
 		char * ansBuffer = (char *)MallocOrDie(sizeof(char)*MAX_NUMBER_LENGTH);
 		char * newExpression = (char *)MallocOrDie(expression->expressionBufferSize);
 		char * expresssionBegin = newExpression;
+		char * oldExpression = expression->expression;
 		sprintf(ansBuffer, "%f", expression->previousEvaluation);
 
 		while(*expression->expression != '\0') {
@@ -114,11 +190,17 @@ float parse(struct expression_pack * expression)
 
 
 		newExpression[i] = '\0';
-		memset(expression->expression, 0, expression->expressionBufferSize);
-		memcpy(expression->expression, newExpression, expression->expressionBufferSize);
+		memset(oldExpression, 0, expression->expressionBufferSize);
+		memcpy(oldExpression, newExpression, expression->expressionBufferSize);
 		free(ansBuffer);
 		free(newExpression);
 	}
+
+	if (!expandFunctions(expression)) {
+		return 0;
+	}
+
+
 	if (hasParenthesis(expression->expression)) {
 		char * buffer = (char *)MallocOrDie(expression->expressionBufferSize);
 		char * resultBuffer = (char *)MallocOrDie(sizeof(char) * MAX_NUMBER_LENGTH);
@@ -175,6 +257,7 @@ float parse(struct expression_pack * expression)
 #pragma warning(disable : 4996)
 float evaluate(char * expression, size_t bufLength)
 {
+	if (*expression == '\0') return 0;
 	if (getLengthOfNextNumber(expression, 0) == strlen(expression)) return getNextNum(expression, 0);
 	//Our intention in this function is to tokenize the expression
 	//on each iteration and then solve token that has the highest precedence
@@ -314,11 +397,14 @@ void initialize_calculator()
 
 	insertError("1", "Syntax Error. Parenthesis mismatch");
 	insertError("2", "Syntax Error. You have two consequtive operators in the expression somewhere");
-	
+	insertError("3", "Syntax Error. A function you provided does not exist");
+	insertError("4", "Syntax Error. A function you provided does not have a comma in its arguments. Format for any function is func(arg1,arg2).");
+
 	insertFunction("*", multiply);
 	insertFunction("/", divide);
 	insertFunction("+", add);
 	insertFunction("-", subtract);
+	insertFunction("log", log_func);
 
 	calculatorIsInitialized = 1;
 }
@@ -357,6 +443,8 @@ int32_t beginInputLoop()
 	free(expression->expression);
 	free(expression);
 
+	expression->expression = NULL;
+	expression = NULL;
 	return 0;
 }
 
