@@ -200,7 +200,6 @@ float parse(struct expression_pack * expression)
 		return 0;
 	}
 
-
 	if (hasParenthesis(expression->expression)) {
 		char * buffer = (char *)MallocOrDie(expression->expressionBufferSize);
 		char * resultBuffer = (char *)MallocOrDie(sizeof(char) * MAX_NUMBER_LENGTH);
@@ -257,7 +256,8 @@ float parse(struct expression_pack * expression)
 #pragma warning(disable : 4996)
 float evaluate(char * expression, size_t bufLength)
 {
-	if (*expression == '\0') return 0;
+	if (strcmp(expression, "inf") == 0 || strcmp(expression, "-inf") == 0) return (float)atof(expression);
+	if (strlen(expression) == 0) return 0;
 	if (getLengthOfNextNumber(expression, 0) == strlen(expression)) return getNextNum(expression, 0);
 	//Our intention in this function is to tokenize the expression
 	//on each iteration and then solve token that has the highest precedence
