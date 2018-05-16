@@ -99,10 +99,10 @@ float parse(struct expression_pack * expression)
 
 		char * ansBuffer = (char *)MallocOrDie(sizeof(char)*MAX_NUMBER_LENGTH);
 		char * newExpression = (char *)MallocOrDie(expression->expressionBufferSize);
-
+		char * expresssionBegin = newExpression;
 		sprintf(ansBuffer, "%f", expression->previousEvaluation);
 
-		while(expression->expression) {
+		while(*expression->expression != '\0') {
 			if (strstr(expression->expression, PREV_EVAL_SHORTCODE) == expression->expression) {
 				strcpy(&newExpression[i], ansBuffer);
 				i += ansLength;
@@ -112,12 +112,15 @@ float parse(struct expression_pack * expression)
 			}
 		}
 
+
+		newExpression[i] = '\0';
+		memset(expression->expression, 0, expression->expressionBufferSize);
+		memcpy(expression->expression, newExpression, expression->expressionBufferSize);
 		free(ansBuffer);
-		free(expression->expression);
-		expression->expression = newExpression;
+		free(newExpression);
 	}
 	if (hasParenthesis(expression->expression)) {
-		char * buffer = (char *)MallocOrDie(sizeof(char) * expression->expressionBufferSize);
+		char * buffer = (char *)MallocOrDie(expression->expressionBufferSize);
 		char * resultBuffer = (char *)MallocOrDie(sizeof(char) * MAX_NUMBER_LENGTH);
 		float result;
 
@@ -133,7 +136,7 @@ float parse(struct expression_pack * expression)
 
 			result = evaluate(buffer, expression->expressionBufferSize);
 			sprintf(resultBuffer, "%f", result);
-			memset(buffer, 0, expression->expressionBufferSize * sizeof(char));
+			memset(buffer, 0, expression->expressionBufferSize);
 
 			size_t i2, j2;
 			for (i2 = 0, j2 = 0; j2 < strlen(expression->expression);) {
@@ -146,8 +149,8 @@ float parse(struct expression_pack * expression)
 				}
 			}
 
-			memcpy(expression->expression, buffer, expression->expressionBufferSize * sizeof(char));
-			memset(buffer, 0, expression->expressionBufferSize * sizeof(char));
+			memcpy(expression->expression, buffer, expression->expressionBufferSize);
+			memset(buffer, 0, expression->expressionBufferSize);
 		}
 
 		expression->previousEvaluation = evaluate(expression->expression, expression->expressionBufferSize);
