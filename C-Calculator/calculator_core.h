@@ -212,6 +212,7 @@ float parse(struct expression_pack * expression)
 		newExpression[i] = '\0';
 		memset(oldExpression, 0, expression->expressionBufferSize);
 		memcpy(oldExpression, newExpression, expression->expressionBufferSize);
+		expression->expression = oldExpression;
 		free(ansBuffer);
 		free(newExpression);
 	}

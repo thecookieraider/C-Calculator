@@ -20,6 +20,10 @@
 #define MAXIMUM_EXPRESSION_LENGTH 4000
 #endif
 
+#ifndef PREV_EVAL_SHORTCODE
+#define PREV_EVAL_SHORTCODE "ans"
+#endif
+
 inline void * MallocOrDie(size_t size);
 
 int32_t isOperator(char c)
@@ -112,6 +116,19 @@ char * eatEverythingBad(char * expr, size_t bufSize)
 			expr++;
 			continue;
 		} else if (isdigit(*expr) || isOperator(*expr) || *expr == ')' || *expr == '(' || *expr == ',') {
+			*newstr = *expr;
+			newstr++;
+			expr++;
+			continue;
+		} else if (strstr(expr, PREV_EVAL_SHORTCODE) == expr) {
+			*newstr = *expr;
+			newstr++;
+			expr++;
+
+			*newstr = *expr;
+			newstr++;
+			expr++;
+
 			*newstr = *expr;
 			newstr++;
 			expr++;
