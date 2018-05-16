@@ -56,7 +56,27 @@ float subtract(float n1, float n2)
 
 float log_func(float n1, float n2)
 {
+	return (float)log(n1);
+}
+
+float log10_func(float n1, float n2)
+{
 	return (float)log10(n1);
+}
+
+float exp_func(float n1, float n2)
+{
+	return (float)exp(n1);
+}
+
+float pow_func(float n1, float n2)
+{
+	return (float)pow(n1, n2);
+}
+
+float sqrt_func(float n1, float n2)
+{
+	return (float)sqrt(n1);
 }
 
 static struct hashmap * errorMessages = NULL;
@@ -200,46 +220,6 @@ float parse(struct expression_pack * expression)
 		return 0;
 	}
 
-	if (hasParenthesis(expression->expression)) {
-		char * buffer = (char *)MallocOrDie(expression->expressionBufferSize);
-		char * resultBuffer = (char *)MallocOrDie(sizeof(char) * MAX_NUMBER_LENGTH);
-		float result;
-
-		while (strchr(expression->expression, '(')) {
-			ptrdiff_t i, j;
-			ptrdiff_t lastOpeningParenthesisIndex = strrchr(expression->expression, '(') - expression->expression;
-			ptrdiff_t closingParenthesisIndex = strchr(expression->expression + lastOpeningParenthesisIndex, ')') - expression->expression;
-			for (i = lastOpeningParenthesisIndex + 1, j = 0; i < closingParenthesisIndex; i++, j++) {
-				buffer[j] = expression->expression[i];
-			}
-			
-			buffer[j] = '\0';
-
-			result = evaluate(buffer, expression->expressionBufferSize);
-			sprintf(resultBuffer, "%f", result);
-			memset(buffer, 0, expression->expressionBufferSize);
-
-			size_t i2, j2;
-			for (i2 = 0, j2 = 0; j2 < strlen(expression->expression);) {
-				if (i2 == lastOpeningParenthesisIndex) {
-					strcpy(&buffer[i2], resultBuffer);
-					i2 += getLengthOfNumber(result);
-					j2 += (closingParenthesisIndex - lastOpeningParenthesisIndex) + 1;
-				} else {
-					buffer[i2++] = expression->expression[j2++];
-				}
-			}
-
-			memcpy(expression->expression, buffer, expression->expressionBufferSize);
-			memset(buffer, 0, expression->expressionBufferSize);
-		}
-
-		expression->previousEvaluation = evaluate(expression->expression, expression->expressionBufferSize);
-		return expression->previousEvaluation;
-	} else {
-		expression->previousEvaluation = evaluate(expression->expression, expression->expressionBufferSize);
-		return expression->previousEvaluation;
-	}
 	
 	expression->previousEvaluation = evaluate(expression->expression, expression->expressionBufferSize);
 	return expression->previousEvaluation;
@@ -271,6 +251,41 @@ float evaluate(char * expression, size_t bufLength)
 	int32_t highestPriorityScore = -1;
 	size_t i, j;
 
+
+	if (hasParenthesis(expression)) {
+		char * buffer = (char *)MallocOrDie(bufLength);
+		char * resultBuffer = (char *)MallocOrDie(sizeof(char) * MAX_NUMBER_LENGTH);
+		float result;
+
+		while (strchr(expression, '(')) {
+			ptrdiff_t i, j;
+			ptrdiff_t lastOpeningParenthesisIndex = strrchr(expression, '(') - expression;
+			ptrdiff_t closingParenthesisIndex = strchr(expression + lastOpeningParenthesisIndex, ')') - expression;
+			for (i = lastOpeningParenthesisIndex + 1, j = 0; i < closingParenthesisIndex; i++, j++) {
+				buffer[j] = expression[i];
+			}
+
+			buffer[j] = '\0';
+
+			result = evaluate(buffer, bufLength);
+			sprintf(resultBuffer, "%f", result);
+			memset(buffer, 0, bufLength);
+
+			size_t i2, j2;
+			for (i2 = 0, j2 = 0; j2 < strlen(expression);) {
+				if (i2 == lastOpeningParenthesisIndex) {
+					strcpy(&buffer[i2], resultBuffer);
+					i2 += getLengthOfNumber(result);
+					j2 += (closingParenthesisIndex - lastOpeningParenthesisIndex) + 1;
+				} else {
+					buffer[i2++] = expression[j2++];
+				}
+			}
+
+			memcpy(expression, buffer, bufLength);
+			memset(buffer, 0, bufLength);
+		}
+	}
 
 	//Tokenizing is simple. Should be self explanatory.
 	for (i = 0, j = 0; i < strlen(expression); j++) {
@@ -404,7 +419,11 @@ void initialize_calculator()
 	insertFunction("/", divide);
 	insertFunction("+", add);
 	insertFunction("-", subtract);
-	insertFunction("log", log_func);
+	insertFunction("loe", log_func);
+	insertFunction("log", log10_func);
+	insertFunction("exp", exp_func);
+	insertFunction("pow", pow_func);
+	insertFunction("sqt", sqrt_func);
 
 	calculatorIsInitialized = 1;
 }
