@@ -6,9 +6,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <Windows.h>
 
-#ifndef MAXLINE
-#define MAXLINE 100  
+#ifndef MAX_NUMBER_LENGTH
+#define MAX_NUMBER_LENGTH 1000  
 #endif
 
 #ifndef OPERATOR_STRING
@@ -18,6 +19,8 @@
 #ifndef MAXIMUM_EXPRESSION_LENGTH
 #define MAXIMUM_EXPRESSION_LENGTH 4000
 #endif
+
+inline void * MallocOrDie(size_t size);
 
 int32_t hasParenthesis(char * expression)
 {
@@ -58,7 +61,7 @@ int32_t parenthesisAreConsistent(char * expression)
 #pragma warning(push)
 #pragma warning(disable : 4996)
 int32_t getLengthOfNumber(float val) {
-	char * buffer = (char *)malloc(sizeof(char*) * 100);
+	char * buffer = (char *)MallocOrDie(sizeof(char*) * MAX_NUMBER_LENGTH);
 	sprintf(buffer, "%f", val);
 	int32_t toreturn = strlen(buffer);
 	free(buffer);
@@ -79,9 +82,9 @@ static int32_t strindex(char * s, char * t) {
 	return i;
 }
 
-char * eatSpaces(char * expr) {
+char * eatSpaces(char * expr, size_t bufSize) {
 
-	char * newstr = (char *)malloc(sizeof(char) * (strlen(expr)+1));
+	char * newstr = (char *)MallocOrDie(sizeof(char) * bufSize);
 	char * begincache = newstr;
 	while (*expr != '\0') {
 		if (isspace(*expr)) {
@@ -136,17 +139,15 @@ void DieOnWindowsError(FILE * output)
 
 int32_t getline(char * storage)
 {
-	int32_t i;
+	int32_t i = 0;
 	char c;
-
-	i = 0;
 
 	do {
 		storage[i++] = c = getchar();
-	} while (c != '\n' && i != MAXLINE - 1);
+	} while (c != '\n' && i != MAXIMUM_EXPRESSION_LENGTH - 1);
 
-	if (i == MAXLINE - 1) {
-		printf("\n\nError: Line too large to be parsed. Can only process %d characters at a time. Please try again\n\n", MAXLINE);
+	if (i == MAXIMUM_EXPRESSION_LENGTH - 1) {
+		printf("\n\nError: Line too large to be parsed. Can only process %d characters at a time. Please try again\n\n", MAXIMUM_EXPRESSION_LENGTH);
 		return 1;
 	}
 
@@ -156,7 +157,7 @@ int32_t getline(char * storage)
 
 float getNextNum(char * expression, size_t fromIndex)
 {
-	char * buffer = (char *)MallocOrDie(sizeof(char) * MAXLINE);
+	char * buffer = (char *)MallocOrDie(sizeof(char) * MAX_NUMBER_LENGTH);
 
 	int32_t i = fromIndex;
 	int32_t j = 0;
@@ -208,7 +209,7 @@ size_t getLengthOfNextNumber(char * expression, size_t fromIndex)
 
 int32_t isOperator(char c)
 {
-	return strrchr(OPERATOR_STRING, c) != NULL;
+	return strrchr(OPERATOR_STRING, c) != NULL && c != '\0';
 }
 
 char getNextOperator(char * string, int32_t fromIndex)
@@ -247,4 +248,30 @@ uint32_t getOperatorPriority(char operand)
 
 	return -1;
 }
+
+int8_t expressionHasConsequetiveOperators(char * expression){
+	size_t i;
+
+	for (i = 0; i < strlen(expression); i++) {
+		if (isOperator(expression[i]) && isOperator(expression[i + 1])) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+int8_t hasParenthesisMultiplication(char * expression)
+{
+	size_t i;
+
+	for (i = 0; i < strlen(expression); i++) {
+		if ((expression[i] == '(' && !isOperator(expression[i - 1])) || (expression[i] == ')' && expression[i + 1] != ')' && !isOperator(expression[i + 1]))) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 #endif

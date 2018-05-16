@@ -11,36 +11,36 @@
 #include <stdio.h>
 #include "util.h"
 
-#define LIST_INIT(list) list = (struct SinglyLinkedList *)malloc(sizeof(struct SinglyLinkedList)); \
+#define LIST_INIT(list) list = (struct singly_linked_list *)malloc(sizeof(struct singly_linked_list)); \
 						list->head = NULL; \
 						list->tail = NULL
 
 /* Use this instead of malloc everywhere. */
 
-struct Node
+struct node
 {
 	void * data;
-	struct Node * next;
-	struct Node * prev;
+	struct node * next;
+	struct node * prev;
 };
 
-struct SinglyLinkedList
+struct singly_linked_list
 {
-	struct Node * head;
-	struct Node * tail;
+	struct node * head;
+	struct node * tail;
 };
 
-void linkedlist_push_front(struct SinglyLinkedList * list, void * new_data, size_t data_size)
+void linkedlist_push_front(struct singly_linked_list * list, void * new_data, size_t data_size)
 {
 	if (!list->head) {
-		list->head = (struct Node *)MallocOrDie(sizeof(struct Node));
+		list->head = (struct node *)MallocOrDie(sizeof(struct node));
 		list->head->data = MallocOrDie(data_size);
 		memcpy(list->head->data, new_data, data_size);
 		list->head->next = NULL;
 		list->head->prev = NULL;
 		list->tail = list->head;
 	} else {
-		struct Node * new_node = (struct Node *)MallocOrDie(sizeof(struct Node));
+		struct node * new_node = (struct node *)MallocOrDie(sizeof(struct node));
 		new_node->data = MallocOrDie(data_size);
 		memcpy(new_node->data, new_data, data_size);
 		new_node->next = list->head;
@@ -50,30 +50,30 @@ void linkedlist_push_front(struct SinglyLinkedList * list, void * new_data, size
 	}
 }
 
-void linkedlist_push_back(struct SinglyLinkedList * list, void * new_data, size_t data_size)
+void linkedlist_push_back(struct singly_linked_list * list, void * new_data, size_t data_size)
 {
 	if (!list->head) {
-		list->head = (struct Node *)MallocOrDie(sizeof(struct Node));
+		list->head = (struct node *)MallocOrDie(sizeof(struct node));
 		list->head->data = MallocOrDie(data_size);
 		memcpy(list->head->data, new_data, data_size);
 		list->head->next = NULL;
 		list->head->prev = NULL;
 		list->tail = list->head;
 	} else if(!list->tail) {
-		struct Node * itr = list->head;
+		struct node * itr = list->head;
 
 		while (itr->next) {
 			itr = list->head->next;
 		}
 
-		itr->next = (struct Node *)MallocOrDie(sizeof(struct Node));
+		itr->next = (struct node *)MallocOrDie(sizeof(struct node));
 		itr->next->data = MallocOrDie(data_size);
 		memcpy(itr->next->data, new_data, data_size);
 		itr->next->next = NULL;
 		itr->next->prev = itr;
 		list->tail = itr->next;
 	} else {
-		list->tail->next = (struct Node *)MallocOrDie(sizeof(struct Node));
+		list->tail->next = (struct node *)MallocOrDie(sizeof(struct node));
 		list->tail->next->data = MallocOrDie(data_size);
 		memcpy(list->tail->next->data, new_data, data_size);
 		list->tail->next->next = NULL;
@@ -82,18 +82,18 @@ void linkedlist_push_back(struct SinglyLinkedList * list, void * new_data, size_
 	}
 }
 
-void linkedlist_pop(struct SinglyLinkedList * list)
+void linkedlist_pop(struct singly_linked_list * list)
 {
-	struct Node * to_destroy = list->head;
+	struct node * to_destroy = list->head;
 	list->head = list->head->next;
 	free(to_destroy->data);
 	free(to_destroy);
 }
 
-size_t linkedlist_sizeOfList(struct SinglyLinkedList * list)
+size_t linkedlist_sizeOfList(struct singly_linked_list * list)
 {
 	size_t count = 0;
-	struct Node * itr = list->head;
+	struct node * itr = list->head;
 	while (itr) {
 		count++;
 		itr = itr->next;
@@ -102,15 +102,15 @@ size_t linkedlist_sizeOfList(struct SinglyLinkedList * list)
 	return count;
 }
 
-void * linkedlist_top(struct SinglyLinkedList * list)
+void * linkedlist_top(struct singly_linked_list * list)
 {
 	return list->head->data;
 }
 
-void linkedlist_free(struct SinglyLinkedList * list)
+void linkedlist_free(struct singly_linked_list * list)
 {
-	struct Node * n = list->head;
-	struct Node * toFree = n;
+	struct node * n = list->head;
+	struct node * toFree = n;
 	while (n) {
 		n = n->next;
 		free(toFree->data);

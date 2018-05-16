@@ -13,11 +13,16 @@
 #define MAX_ERROR_CODE 256
 #endif
 
+#ifndef PREV_EVAL_SHORTCODE
+#define PREV_EVAL_SHORTCODE "ans"
+#endif
+
 struct expression_pack
 {
 	float previousEvaluation;
+	size_t expressionBufferSize;
 	char * expression;
-	int32_t error;
+	char * error;
 };
 
 struct expression_token
@@ -64,13 +69,98 @@ static struct hashmap * errorMessages = NULL;
 static struct func_hashmap * functions = NULL;
 static int32_t calculatorIsInitialized = 0;
 
-float getAndApplyFunction(char * name, float left, float right);
 void insertFunction(char * name, Function f);
+float getAndApplyFunction(char * name, float left, float right);
+float evaluate(char * expression, size_t bufLength);
 
+#pragma warning(push)
+#pragma warning(disable : 4996)
 float parse(struct expression_pack * expression)
 {
-	return 0;
+	expression->expression = eatSpaces(expression->expression, expression->expressionBufferSize);
+
+	//Sanity checks before we process this input
+	if (!calculatorIsInitialized) {
+		printf("System Error. Calculator system has not been initialized and it could not parse the given expression");
+		expression->previousEvaluation = 0;
+		return 0;
+	} else if (expressionHasConsequetiveOperators(expression->expression)) {
+		expression->error = "2";
+		return 0;
+	} else if (!parenthesisAreConsistent(expression->expression)) {
+		expression->error = "1";
+		return 0;
+	}
+
+	//Expand the ans variable
+	if (strstr(expression->expression, PREV_EVAL_SHORTCODE) != NULL) {
+		size_t ansLength = getLengthOfNumber(expression->previousEvaluation);
+		int32_t i = 0;
+
+		char * ansBuffer = (char *)MallocOrDie(sizeof(char)*MAX_NUMBER_LENGTH);
+		char * newExpression = (char *)MallocOrDie(expression->expressionBufferSize);
+
+		sprintf(ansBuffer, "%f", expression->previousEvaluation);
+
+		while(expression->expression) {
+			if (strstr(expression->expression, PREV_EVAL_SHORTCODE) == expression->expression) {
+				strcpy(&newExpression[i], ansBuffer);
+				i += ansLength;
+				expression->expression += strlen(PREV_EVAL_SHORTCODE);
+			} else {
+				newExpression[i++] = *expression->expression++;
+			}
+		}
+
+		free(ansBuffer);
+		free(expression->expression);
+		expression->expression = newExpression;
+	}
+	if (hasParenthesis(expression->expression)) {
+		char * buffer = (char *)MallocOrDie(sizeof(char) * expression->expressionBufferSize);
+		char * resultBuffer = (char *)MallocOrDie(sizeof(char) * MAX_NUMBER_LENGTH);
+		float result;
+
+		while (strchr(expression->expression, '(')) {
+			ptrdiff_t i, j;
+			ptrdiff_t lastOpeningParenthesisIndex = strrchr(expression->expression, '(') - expression->expression;
+			ptrdiff_t closingParenthesisIndex = strchr(expression->expression + lastOpeningParenthesisIndex, ')') - expression->expression;
+			for (i = lastOpeningParenthesisIndex + 1, j = 0; i < closingParenthesisIndex; i++, j++) {
+				buffer[j] = expression->expression[i];
+			}
+			
+			buffer[j] = '\0';
+
+			result = evaluate(buffer, expression->expressionBufferSize);
+			sprintf(resultBuffer, "%f", result);
+			memset(buffer, 0, expression->expressionBufferSize * sizeof(char));
+
+			size_t i2, j2;
+			for (i2 = 0, j2 = 0; j2 < strlen(expression->expression);) {
+				if (i2 == lastOpeningParenthesisIndex) {
+					strcpy(&buffer[i2], resultBuffer);
+					i2 += getLengthOfNumber(result);
+					j2 += (closingParenthesisIndex - lastOpeningParenthesisIndex) + 1;
+				} else {
+					buffer[i2++] = expression->expression[j2++];
+				}
+			}
+
+			memcpy(expression->expression, buffer, expression->expressionBufferSize * sizeof(char));
+			memset(buffer, 0, expression->expressionBufferSize * sizeof(char));
+		}
+
+		expression->previousEvaluation = evaluate(expression->expression, expression->expressionBufferSize);
+		return expression->previousEvaluation;
+	} else {
+		expression->previousEvaluation = evaluate(expression->expression, expression->expressionBufferSize);
+		return expression->previousEvaluation;
+	}
+	
+	expression->previousEvaluation = evaluate(expression->expression, expression->expressionBufferSize);
+	return expression->previousEvaluation;
 }
+#pragma warning(pop)
 
 //This function will take any parenthesis-void expression and evaluate it
 //with proper respect to order of operations. Note that the expression buffer
@@ -82,7 +172,7 @@ float parse(struct expression_pack * expression)
 #pragma warning(disable : 4996)
 float evaluate(char * expression, size_t bufLength)
 {
-	expression = eatSpaces(expression);
+	if (getLengthOfNextNumber(expression, 0) == strlen(expression)) return getNextNum(expression, 0);
 	//Our intention in this function is to tokenize the expression
 	//on each iteration and then solve token that has the highest precedence
 	//and comes earliest in the expression
@@ -181,21 +271,27 @@ float evaluate(char * expression, size_t bufLength)
 
 #pragma warning(push)
 #pragma warning(disable : 4996)
-int32_t insertError(int32_t code, char * message, char * usableBuffer)
+int32_t insertError(char * code, char * message)
 {
-	if (code > MAX_ERROR_CODE || code < 0) {
+	if (atoi(code) > MAX_ERROR_CODE || atoi(code) < 0) {
 		return 0;
 	} else {
-		int32_t numberLength = 0;
-		int32_t codeCopy = code;
-		while (codeCopy > 1) { codeCopy /= 10; numberLength++; }
-
-		hashmap_put(errorMessages, _itoa(code, usableBuffer, 10), message);
-		memset(usableBuffer, ' ', numberLength * sizeof(char));
+		hashmap_put(errorMessages, code, message);
 		return 1;
 	}
 }
 #pragma warning(pop)
+
+char * getErrorMessage(char * code)
+{
+	struct hashmap_element * e;
+	if ((e = hashmap_get(errorMessages, code)) != NULL)
+	{
+		return (char *)e->data;
+	} else {
+		return NULL;
+	}
+}
 
 void insertFunction(char * name, Function functor)
 {
@@ -213,16 +309,14 @@ void initialize_calculator()
 	if (errorMessages == NULL) errorMessages = new_hashmap();
 	if (functions == NULL) functions = new_func_hashmap();
 
-	char * buffer = (char *)MallocOrDie(sizeof(char)*MAX_ERROR_CODE);
-	insertError(0, "Syntax Error. Parenthesis mismatch", buffer);
-	insertError(1, "Syntax Error. Theres junk on the stack after grabbing the operator. You entered an obviously invalid expression", buffer);
-
+	insertError("1", "Syntax Error. Parenthesis mismatch");
+	insertError("2", "Syntax Error. You have two consequtive operators in the expression somewhere");
+	
 	insertFunction("*", multiply);
 	insertFunction("/", divide);
 	insertFunction("+", add);
 	insertFunction("-", subtract);
 
-	free(buffer);
 	calculatorIsInitialized = 1;
 }
 
@@ -230,6 +324,37 @@ void deinitialize_calculator()
 {
 	hashmap_free(errorMessages);
 	func_hashmap_free(functions);
+}
+
+
+int32_t beginInputLoop()
+{
+	struct expression_pack * expression = (struct expression_pack *)MallocOrDie(sizeof(struct expression_pack));
+	expression->error = NULL;
+	expression->previousEvaluation = 0;
+	expression->expression = (char *)MallocOrDie(MAXIMUM_EXPRESSION_LENGTH * sizeof(char));
+	expression->expressionBufferSize = MAXIMUM_EXPRESSION_LENGTH * sizeof(char);
+
+	do {
+		if (getline(expression->expression)) {
+			while (getchar() != '\n');
+			continue;
+		}
+
+		if (expression->expression[0] == 'q') break;
+		parse(expression);
+		if (expression->error) {
+			printf("\n%s\n", getErrorMessage(expression->error));
+			expression->error = NULL;
+		} else {
+			printf("\n\n%f\n\n", expression->previousEvaluation);
+		}
+	} while (expression->expression[0] != 'q');
+
+	free(expression->expression);
+	free(expression);
+
+	return 0;
 }
 
 #endif

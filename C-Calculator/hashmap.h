@@ -63,7 +63,7 @@ void hashmap_rehash(struct hashmap * map)
 }
 
 //Sets up a new hashmap. The initial size of this table
-//will be set to the macro INITIAL_SIZE. Redefine hte macro if you 
+//will be set to the macro INITIAL_SIZE. Redefine the macro if you 
 //want the initial size to be greater or less
 struct hashmap * new_hashmap()
 {
