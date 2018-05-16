@@ -91,6 +91,8 @@ static int32_t strindex(char * s, char * t) {
 	return i;
 }
 
+#pragma warning(push)
+#pragma warning(disable : 4996)
 char * eatEverythingBad(char * expr, size_t bufSize)
 {
 	char * newstr = (char *)MallocOrDie(bufSize);
@@ -99,21 +101,9 @@ char * eatEverythingBad(char * expr, size_t bufSize)
 
 	while (*expr != '\0') {
 		if (isalpha(*expr) && isalpha(expr[1]) && isalpha(expr[2]) && expr[3] == '(') {
-			*newstr = *expr;
-			newstr++;
-			expr++;
-
-			*newstr = *expr;
-			newstr++;
-			expr++;
-
-			*newstr = *expr;
-			newstr++;
-			expr++;
-
-			*newstr = *expr;
-			newstr++;
-			expr++;
+			strncpy(newstr, expr, 4);
+			newstr += 4;
+			expr += 4;
 			continue;
 		} else if (isdigit(*expr) || isOperator(*expr) || *expr == ')' || *expr == '(' || *expr == ',') {
 			*newstr = *expr;
@@ -121,17 +111,9 @@ char * eatEverythingBad(char * expr, size_t bufSize)
 			expr++;
 			continue;
 		} else if (strstr(expr, PREV_EVAL_SHORTCODE) == expr) {
-			*newstr = *expr;
-			newstr++;
-			expr++;
-
-			*newstr = *expr;
-			newstr++;
-			expr++;
-
-			*newstr = *expr;
-			newstr++;
-			expr++;
+			strncpy(newstr, expr, 3);
+			newstr += 3;
+			expr += 3;
 			continue;
 		} else {
 			expr++;
@@ -147,6 +129,7 @@ char * eatEverythingBad(char * expr, size_t bufSize)
 	free(begincache);
 	return beginExpr;
 }
+#pragma warning(pop)
 
 char * eatSpaces(char * expr, size_t bufSize) {
 
