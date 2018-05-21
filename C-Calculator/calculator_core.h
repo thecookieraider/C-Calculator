@@ -226,7 +226,7 @@ float parse(struct expression_pack * expression)
 }
 #pragma warning(pop)
 
-//This function will take any parenthesis-void expression and evaluate it
+//This function will take any expression and evaluate it
 //with proper respect to order of operations. Note that the expression buffer
 //passed to this function must be many times larger than the expression itself since any 
 //integers present in the expression will be converted to floats and be represented as such
